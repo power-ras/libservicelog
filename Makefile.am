@@ -15,6 +15,8 @@
 
 SUBDIRS = src
 
+EXTRA_DIST = servicelog.db bootstrap.sh
+
 library_includedir = ${includedir}/servicelog-1/
 library_include_HEADERS = servicelog-1/servicelog.h servicelog-1/libservicelog.h
 
