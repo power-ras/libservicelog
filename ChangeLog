@@ -1,0 +1,20 @@
+* Thu Jan 10 2013 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.13
+- Legalize SQL insert command input string
+- Minor typo fix
+- repair_action : fix output format issue
+
+* Wed Sep 12 2012 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.12
+- Minor changes
+
+* Sat Nov 07 2009 Jim Keniston <jkenisto at us.ibm.com>, Brad Peters 1.1.x
+- Minor changes continued in the ensuing months
+
+* Sat Aug 16 2008 Mike Strosaker <strosake at austin.ibm.com> 1.0.1
+- Create /var/lib/servicelog/servicelog.db at install time
+- Additional comments and code cleanup
+- Fix issue with notification tools not being started
+- Beautify printing of notification tools
+
+* Tue Mar 04 2008 Mike Strosaker <strosake at austin.ibm.com> 1.0.0
+- Initial creation of the package
+

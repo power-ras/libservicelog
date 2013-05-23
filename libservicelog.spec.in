@@ -1,0 +1,94 @@
+%define name libservicelog
+%define version @VERSION@
+
+Name:           %{name}
+Version:        %{version}
+Release:        1%{?dist}
+Summary:        Servicelog Database and Library
+Group:          System Environment/Libraries
+License:        LGPLv2
+Vendor:		IBM Corp.
+URL:            http://linux-diag.sourceforge.net/servicelog
+Source0:        http://downloads.sourceforge.net/linux-diag/%{name}-%{version}.tar.gz
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+ExclusiveArch:	ppc ppc64
+BuildRequires:  sqlite-devel bison flex librtas-devel
+Requires(pre):	/usr/sbin/groupadd
+
+%description
+The libservicelog package contains a library to create and maintain a
+database for storing events related to system service.  This database
+allows for the logging of serviceable and informational events, and for
+the logging of service procedures that have been performed upon the system.
+
+
+%package        devel
+Summary:        Development files for %{name}
+Group:          Development/Libraries
+Requires:       %{name} = %{version}-%{release}
+
+%description    devel
+Contains header files for building with libservicelog.
+
+
+%prep
+%setup -q
+
+%build
+%configure --disable-static
+%{__make} %{?_smp_mflags}
+touch servicelog.db
+install -D --mode=754 servicelog.db \
+	$RPM_BUILD_ROOT/var/lib/servicelog/servicelog.db
+
+%install
+%{__rm} -rf $RPM_BUILD_ROOT
+%{__make} install DESTDIR=$RPM_BUILD_ROOT
+
+%clean
+%{__rm} -rf $RPM_BUILD_ROOT
+
+%pre
+/usr/sbin/groupadd -r service || echo "groupadd service failed"
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files
+%defattr(-,root,root,-)
+%doc COPYING NEWS AUTHORS
+%exclude %{_libdir}/*.la
+%{_libdir}/libservicelog-@GENERIC_RELEASE@.so.*
+%{_libdir}/libservicelog-*.so.*
+%attr( 754, root, service ) %dir /var/lib/servicelog
+%attr( 644, root, service ) /var/lib/servicelog/servicelog.db
+%config /var/lib/servicelog/servicelog.db
+
+%files devel
+%defattr(-,root,root,-)
+%{_libdir}/*.so
+%{_includedir}/servicelog-1
+%{_libdir}/*.la
+%{_libdir}/pkgconfig/servicelog-1.pc
+
+%changelog
+* Thu Jan 10 2013 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.13
+- Legalize SQL insert command input string
+- repair_action : fix output format issue
+- Minor typo fix
+
+* Wed Sep 12 2012 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.12
+- Minor changes
+
+* Sat Nov 07 2009 Jim Keniston <jkenisto at us.ibm.com>, Brad Peters 1.1.x
+- Minor changes continued in the ensuing months
+
+* Sat Aug 16 2008 Mike Strosaker <strosake at austin.ibm.com> 1.0.1
+- Create /var/lib/servicelog/servicelog.db at install time
+- Additional comments and code cleanup
+- Fix issue with notification tools not being started
+- Beautify printing of notification tools
+
+* Tue Mar 04 2008 Mike Strosaker <strosake at austin.ibm.com> 1.0.0
+- Initial creation of the package

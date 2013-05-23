@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: servicelog
+Description: Library for access to the system servicelog
+Version: @VERSION@
+Libs: -L${libdir} -lsqlite3 -l@GENERIC_PACKAGE_NAME@
+Cflags: -I${includedir}/@GENERIC_PACKAGE_NAME@-@GENERIC_API_VERSION@
