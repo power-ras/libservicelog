@@ -1,3 +1,6 @@
+* Tue Aug 20 2013 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.14
+- Include servicelog.db and bootstrap.sh file into compression file list
+
 * Thu Jan 10 2013 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.13
 - Legalize SQL insert command input string
 - Minor typo fix

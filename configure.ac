@@ -17,7 +17,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([libservicelog],[1.1.13],[hegdevasant@in.ibm.com])
+AC_INIT([libservicelog],[1.1.14],[hegdevasant@in.ibm.com])
 AC_CONFIG_SRCDIR([src/servicelog.c])
 AC_CONFIG_HEADER([src/config.h])
 AM_INIT_AUTOMAKE
@@ -26,7 +26,7 @@ GENERIC_LIBRARY_NAME=libservicelog
 GENERIC_PACKAGE_NAME=servicelog
 GENERIC_MAJOR_VERSION=1
 GENERIC_MINOR_VERSION=1
-GENERIC_MICRO_VERSION=13
+GENERIC_MICRO_VERSION=14
 GENERIC_API_VERSION=$GENERIC_MAJOR_VERSION
 AC_SUBST(GENERIC_API_VERSION)
 

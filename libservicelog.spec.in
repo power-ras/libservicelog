@@ -3,7 +3,7 @@
 
 Name:           %{name}
 Version:        %{version}
-Release:        1%{?dist}
+Release:        0%{?dist}
 Summary:        Servicelog Database and Library
 Group:          System Environment/Libraries
 License:        LGPLv2
@@ -73,6 +73,9 @@ install -D --mode=754 servicelog.db \
 %{_libdir}/pkgconfig/servicelog-1.pc
 
 %changelog
+* Tue Aug 20 2013 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.14
+- Include servicelog.db and bootstrap.sh file into compression file list
+
 * Thu Jan 10 2013 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.13
 - Legalize SQL insert command input string
 - repair_action : fix output format issue
