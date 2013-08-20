@@ -17,7 +17,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([libservicelog],[1.1.13],[jkenisto@us.ibm.com,hegdevasant@in.ibm.com])
+AC_INIT([libservicelog],[1.1.13],[hegdevasant@in.ibm.com])
 AC_CONFIG_SRCDIR([src/servicelog.c])
 AC_CONFIG_HEADER([src/config.h])
 AM_INIT_AUTOMAKE
