@@ -49,7 +49,7 @@ install -D --mode=754 servicelog.db \
 %{__rm} -rf $RPM_BUILD_ROOT
 
 %pre
-/usr/sbin/groupadd -r service || echo "groupadd service failed"
+getent group service >/dev/null || /usr/sbin/groupadd service
 
 %post -p /sbin/ldconfig
 
