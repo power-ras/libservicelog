@@ -279,7 +279,7 @@ sl_printf(FILE *stream, char *fmt, ...)
 			if (newline != NULL) {
 				prnt_len = newline - &tmpbuf[offset] + 1;
 				snprintf(buf + buf_offset, prnt_len,
-					 &tmpbuf[offset]);
+					 "%s", &tmpbuf[offset]);
 				buf_offset = strlen(buf);
 				buf_offset += sprintf(buf + buf_offset, "\n");
 				offset += prnt_len;
@@ -297,7 +297,7 @@ sl_printf(FILE *stream, char *fmt, ...)
 			}
 
 			/* print up to the last brkpt */
-			snprintf(buf + buf_offset, prnt_len, &tmpbuf[offset]);
+			snprintf(buf + buf_offset, prnt_len, "%s", &tmpbuf[offset]);
 			buf_offset = strlen(buf);
 			buf_offset += sprintf(buf + buf_offset, "\n");
 			offset += prnt_len;
@@ -305,10 +305,10 @@ sl_printf(FILE *stream, char *fmt, ...)
 		}
 	}
 
-	prnt_len = sprintf(buf + buf_offset, &tmpbuf[offset]);
+	prnt_len = sprintf(buf + buf_offset, "%s", &tmpbuf[offset]);
 	line_offset += prnt_len;
 
-	return fprintf(stream, buf);
+	return fprintf(stream, "%s", buf);
 }
 
 /**
@@ -583,7 +583,7 @@ servicelog_open(servicelog **slog, uint32_t flags)
 
 	rc = sqlite3_open(log->location, &(log->db));
 	if (rc) {
-		snprintf(log->error, SL_MAX_ERR, sqlite3_errmsg(log->db));
+		snprintf(log->error, SL_MAX_ERR, "%s", sqlite3_errmsg(log->db));
 		servicelog_close(log);
 		return ENOENT;
 	}
