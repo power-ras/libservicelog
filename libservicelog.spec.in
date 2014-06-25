@@ -8,16 +8,15 @@ Summary:        Servicelog Database and Library
 Group:          System Environment/Libraries
 License:        LGPLv2
 Vendor:		IBM Corp.
-URL:            http://linux-diag.sourceforge.net/servicelog
-Source0:        http://downloads.sourceforge.net/linux-diag/%{name}-%{version}.tar.gz
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-ExclusiveArch:	ppc ppc64
-BuildRequires:  sqlite-devel bison flex librtas-devel
+URL:            http://linux-diag.sourceforge.net/libservicelog
+Source0:        http://downloads.sourceforge.net/linux-diag/%{name}/%{version}/%{name}-%{version}.tar.gz
+ExclusiveArch:	ppc ppc64 ppc64le
+BuildRequires:  sqlite-devel bison flex librtas-devel libtool automake
 Requires(pre):	/usr/sbin/groupadd
 
 %description
 The libservicelog package contains a library to create and maintain a
-database for storing events related to system service.  This database
+database for storing events related to system service. This database
 allows for the logging of serviceable and informational events, and for
 the logging of service procedures that have been performed upon the system.
 
@@ -25,6 +24,7 @@ the logging of service procedures that have been performed upon the system.
 %package        devel
 Summary:        Development files for %{name}
 Group:          Development/Libraries
+Requires:	pkgconfig sqlite-devel
 Requires:       %{name} = %{version}-%{release}
 
 %description    devel
@@ -35,6 +35,7 @@ Contains header files for building with libservicelog.
 %setup -q
 
 %build
+./bootstrap.sh
 %configure --disable-static
 %{__make} %{?_smp_mflags}
 touch servicelog.db
@@ -57,13 +58,12 @@ getent group service >/dev/null || /usr/sbin/groupadd service
 
 %files
 %defattr(-,root,root,-)
-%doc COPYING NEWS AUTHORS
+%doc COPYING AUTHORS README
 %exclude %{_libdir}/*.la
 %{_libdir}/libservicelog-@GENERIC_RELEASE@.so.*
 %{_libdir}/libservicelog-*.so.*
 %attr( 754, root, service ) %dir /var/lib/servicelog
-%attr( 644, root, service ) /var/lib/servicelog/servicelog.db
-%config /var/lib/servicelog/servicelog.db
+%config(noreplace) %verify(not md5 size mtime) %attr(644,root,service) /var/lib/servicelog/servicelog.db
 
 %files devel
 %defattr(-,root,root,-)
