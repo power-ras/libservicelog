@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU Library General Public
 # Licence along with this program; if not, see <http://www.gnu.org/licenses/>. 
 
+ACLOCAL_AMFLAGS = -I m4
+
 SUBDIRS = src
 
 EXTRA_DIST = servicelog.db bootstrap.sh

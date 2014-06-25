@@ -21,6 +21,7 @@ AC_INIT([libservicelog],[1.1.14],[hegdevasant@in.ibm.com])
 AC_CONFIG_SRCDIR([src/servicelog.c])
 AC_CONFIG_HEADER([src/config.h])
 AM_INIT_AUTOMAKE
+AC_CONFIG_MACRO_DIR([m4])
 
 GENERIC_LIBRARY_NAME=libservicelog
 GENERIC_PACKAGE_NAME=servicelog
