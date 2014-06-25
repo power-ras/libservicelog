@@ -65,13 +65,27 @@ AC_CHECK_LIB([rtas], [rtas_activate_firmware], [], [
 	echo "Error! librtas not found"
 	exit -1])
 
+# Checks for functions
+AC_CHECK_FUNCS([dup2 localtime_r strchr strdup strstr strtoul])
+
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stdint.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([stdint.h stdlib.h string.h unistd.h fcntl.h libintl.h malloc.h stddef.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 AC_STRUCT_TM
+AC_FUNC_ALLOCA
+AC_FUNC_FORK
+AC_FUNC_REALLOC
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT8_T
+AC_TYPE_PID_T
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
+AC_TYPE_UINT8_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
