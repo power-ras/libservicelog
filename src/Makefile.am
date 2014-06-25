@@ -19,7 +19,7 @@ lib_h_files = ../servicelog-1/servicelog.h ../servicelog-1/libservicelog.h
 
 noinst_HEADERS = slog_internal.h
 
-INCLUDES	= -I.. -I../servicelog-1/
+AM_CPPFLAGS	= -I.. -I../servicelog-1/
 
 libservicelog_la_SOURCES = servicelog.c addl_data.c event.c repair_action.c \
 		notify.c v29_compat.c v29_print.c v29_notify_gram.y \
