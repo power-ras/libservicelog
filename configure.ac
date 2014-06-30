@@ -81,5 +81,5 @@ AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([memset strerror strtoull uname])
 
-AC_CONFIG_FILES([Makefile src/Makefile libservicelog.spec src/servicelog-1.pc])
+AC_CONFIG_FILES([Makefile libservicelog.spec src/servicelog-1.pc])
 AC_OUTPUT
