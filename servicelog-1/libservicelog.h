@@ -46,7 +46,7 @@ struct sl_header {
 	uint32_t	event_type;	/**< event type */
 	uint32_t	version;	/**< version of the event_type */
 	uint32_t	event_length;	/**< total event length */
-	time_t		time_event;	/**< timestamp of event occurence */
+	time_t		time_event;	/**< timestamp of event occurrence */
 	time_t		time_log;	/**< timestamp of event logging */
 	uint32_t	severity;	/**< int field of event severity */
 
