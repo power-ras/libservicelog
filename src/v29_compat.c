@@ -310,7 +310,7 @@ convert_rtas_to_v29(servicelog *log, struct sl_event *ev, void **data29,
 	ev29_sz = sizeof(rtas29) + description_sz +
 		nr_callouts*sizeof(struct sl_ppc64_callout) +
 		ev->raw_data_len;
-	ev29 = (struct sl_ppc64_rtas*) malloc(ev29_sz);
+	ev29 = malloc(ev29_sz);
 	if (!ev29) {
 		snprintf(log->error, SL_MAX_ERR, "out of memory in %s",
 							__FUNCTION__);
@@ -393,7 +393,7 @@ convert_encl_to_v29(servicelog *log, struct sl_event *ev, void **data29,
 	ev29_sz = sizeof(encl29) + description_sz +
 		nr_callouts*sizeof(struct sl_ppc64_callout) +
 		ev->raw_data_len;
-	ev29 = (struct sl_ppc64_encl *) malloc(ev29_sz);
+	ev29 = malloc(ev29_sz);
 	if (!ev29) {
 		snprintf(log->error, SL_MAX_ERR, "out of memory in %s",
 							__FUNCTION__);
@@ -546,7 +546,7 @@ convert_v1_repair_to_v29(servicelog *log, struct sl_repair_action *rpr1,
 
 	ev29_sz = sizeof(rpr29) + location_sz + procedure_sz +
 		rpr29.num_repairs*sizeof(uint32_t);
-	ev29 = (struct sl_repair *) malloc(ev29_sz);
+	ev29 = malloc(ev29_sz);
 	if (!ev29) {
 		snprintf(log->error, SL_MAX_ERR, "out of memory in %s",
 							__FUNCTION__);
@@ -1125,7 +1125,7 @@ int v29_servicelog_notify_query(struct v29_servicelog *slog, char *command,
 			// Calc total mem needed to store v29_sl_notify struct + data on end (command and such)
 			size = sizeof(struct v29_sl_notify)
 						+ strlen(v1->command) + 1;
-			v29 = (struct v29_sl_notify*) malloc(size);
+			v29 = malloc(size);
 			if (!v29) {
 				snprintf(log->error, SL_MAX_ERR,
 					"out of memory in %s", __FUNCTION__);
@@ -1178,7 +1178,7 @@ int v29_servicelog_notify_get(struct v29_servicelog *slog, uint32_t id,
 		return rc;
 
 	size = sizeof(struct v29_sl_notify) + strlen(v1->command) + 1;
-	v29 = (struct v29_sl_notify*) malloc(size);
+	v29 = malloc(size);
 	if (!v29) {
 		snprintf(log->error, SL_MAX_ERR, "out of memory in %s",
 							__FUNCTION__);
