@@ -185,21 +185,21 @@ qstring		: /* NULL */	{ $$ = NULL; }
 		;
 
 search_condition : boolean_term
-        	| search_condition KW_OR boolean_term	{
+		| search_condition KW_OR boolean_term	{
 				nr_or_clauses++;
 				$$ = mk_parse_node($2, $1, $3);
 			}
 		;
 
 boolean_term	: boolean_factor
-        	| boolean_term KW_AND boolean_factor {
+		| boolean_term KW_AND boolean_factor {
 				nr_and_clauses++;
 				$$ = mk_parse_node($2, $1, $3);
 			}
 		;
 
 boolean_factor	: comparison_predicate
-        	| '(' search_condition ')'	{ $$ = $2; }
+		| '(' search_condition ')'	{ $$ = $2; }
 		;
 
 comparison_predicate : serviceable_test	{
