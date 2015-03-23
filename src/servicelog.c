@@ -575,6 +575,8 @@ servicelog_open(servicelog **slog, uint32_t flags)
 	*slog = NULL;
 
 	log = malloc(sizeof(struct servicelog));
+	if (!log)
+		return ENOMEM;
 	memset(log, 0, sizeof(struct servicelog));
 
 	log->flags = flags;
