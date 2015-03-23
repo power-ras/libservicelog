@@ -43,7 +43,7 @@
 
 /**
  * insert_addl_data_os
- * @brief Helper fuction for inserting into the os table
+ * @brief Helper function for inserting into the os table
  *
  * @param[in] slog the servicelog to receive the event
  * @param[in] event the event to be inserted
@@ -77,7 +77,7 @@ insert_addl_data_os(servicelog *slog, struct sl_event *event)
 
 /**
  * insert_addl_data_rtas
- * @brief Helper fuction for inserting into the rtas table
+ * @brief Helper function for inserting into the rtas table
  *
  * @param[in] slog the servicelog to receive the event
  * @param[in] event the event to be inserted
@@ -112,7 +112,7 @@ insert_addl_data_rtas(servicelog *slog, struct sl_event *event)
 
 /**
  * insert_addl_data_enclosure
- * @brief Helper fuction for inserting into the enclosure table
+ * @brief Helper function for inserting into the enclosure table
  *
  * @param[in] slog the servicelog to receive the event
  * @param[in] event the event to be inserted
@@ -138,7 +138,7 @@ insert_addl_data_enclosure(servicelog *slog, struct sl_event *event)
 
 /**
  * insert_addl_data_bmc
- * @brief Helper fuction for inserting into the bmc table
+ * @brief Helper function for inserting into the bmc table
  *
  * @param[in] slog the servicelog to receive the event
  * @param[in] event the event to be inserted
@@ -168,7 +168,7 @@ insert_addl_data_bmc(servicelog *slog, struct sl_event *event)
 
 /**
  * retrieve_addl_data_os
- * @brief Helper fuction for retrieving from the os table
+ * @brief Helper function for retrieving from the os table
  *
  * @param[in] e the event to be retrieved
  * @param[in] argc the number of columns in the table
@@ -211,7 +211,7 @@ retrieve_addl_data_os(void *e, int argc, char **argv, char **column)
 
 /**
  * retrieve_addl_data_rtas
- * @brief Helper fuction for retrieving from the rtas table
+ * @brief Helper function for retrieving from the rtas table
  *
  * @param[in] e the event to be retrieved
  * @param[in] argc the number of columns in the table
@@ -286,7 +286,7 @@ retrieve_addl_data_rtas(void *e, int argc, char **argv, char **column)
 
 /**
  * retrieve_addl_data_enclosure
- * @brief Helper fuction for retrieving from the enclosure table
+ * @brief Helper function for retrieving from the enclosure table
  *
  * @param[in] e the event to be retrieved
  * @param[in] argc the number of columns in the table
@@ -321,7 +321,7 @@ retrieve_addl_data_enclosure(void *e, int argc, char **argv, char **column)
 
 /**
  * retrieve_addl_data_bmc
- * @brief Helper fuction for retrieving from the bmc table
+ * @brief Helper function for retrieving from the bmc table
  *
  * @param[in] e the event to be retrieved
  * @param[in] argc the number of columns in the table
@@ -375,7 +375,7 @@ retrieve_addl_data_bmc(void *e, int argc, char **argv, char **column)
 
 /**
  * free_addl_data_os
- * @brief Helper fuction for freeing an event that was retrieved
+ * @brief Helper function for freeing an event that was retrieved
  *
  * @param[in] event the event containing an additional data section to be freed
  */
@@ -396,7 +396,7 @@ void free_addl_data_os(struct sl_event *event)
 
 /**
  * free_addl_data_rtas
- * @brief Helper fuction for freeing an event that was retrieved
+ * @brief Helper function for freeing an event that was retrieved
  *
  * @param[in] event the event containing an additional data section to be freed
  */
@@ -412,7 +412,7 @@ void free_addl_data_rtas(struct sl_event *event)
 
 /**
  * free_addl_data_enclosure
- * @brief Helper fuction for freeing an event that was retrieved
+ * @brief Helper function for freeing an event that was retrieved
  *
  * @param[in] event the event containing an additional data section to be freed
  */
@@ -432,7 +432,7 @@ void free_addl_data_enclosure(struct sl_event *event)
 
 /**
  * free_addl_data_bmc
- * @brief Helper fuction for freeing an event that was retrieved
+ * @brief Helper function for freeing an event that was retrieved
  *
  * @param[in] event the event containing an additional data section to be freed
  */
@@ -645,7 +645,7 @@ print_addl_data_rtas(FILE *str, struct sl_event *event, int verbosity)
 			break;
 		case 0x23:
 			detail = " - Predictive Error, fault may be corrected "
-				"after boot, degraded performace";
+				"after boot, degraded performance";
 			break;
 		case 0x24:
 			detail = " - Predictive Error, loss of redundancy";
