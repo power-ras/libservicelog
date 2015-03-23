@@ -571,7 +571,7 @@ sl_print_ppc64_rtas_event(FILE *str, void *event, int verbosity)
 			break;
 		case 0x23:
 			detail = " - Predictive Error, fault may be corrected "
-				"after boot, degraded performace";
+				"after boot, degraded performance";
 			break;
 		case 0x24:
 			detail = " - Predictive Error, loss of redundancy";
