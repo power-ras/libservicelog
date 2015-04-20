@@ -388,6 +388,9 @@ build_callout(void *c, int argc, char **argv, char **column)
 		callout = callout->next;
 	}
 
+	if (!callout)
+		return 1;
+
 	memset(callout, 0, sizeof(struct sl_callout));
 
 	for (i=0; i<argc; i++) {
@@ -396,28 +399,53 @@ build_callout(void *c, int argc, char **argv, char **column)
 		else if (!strcmp(column[i], "type"))
 			callout->type = atoi(argv[i]);
 		else if (!strcmp(column[i], "procedure")) {
-			callout->procedure = malloc(strlen(argv[i]) + 1);
-			strcpy(callout->procedure, argv[i]);
+			callout->procedure = strdup(argv[i]);
+			if (!callout->procedure)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "location")) {
-			callout->location = malloc(strlen(argv[i]) + 1);
-			strcpy(callout->location, argv[i]);
+			callout->location = strdup(argv[i]);
+			if (!callout->location)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "fru")) {
-			callout->fru = malloc(strlen(argv[i]) + 1);
-			strcpy(callout->fru, argv[i]);
+			callout->fru = strdup(argv[i]);
+			if (!callout->fru)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "serial")) {
-			callout->serial = malloc(strlen(argv[i]) + 1);
-			strcpy(callout->serial, argv[i]);
+			callout->serial = strdup(argv[i]);
+			if (!callout->serial)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "ccin")) {
-			callout->ccin = malloc(strlen(argv[i]) + 1);
-			strcpy(callout->ccin, argv[i]);
+			callout->ccin = strdup(argv[i]);
+			if (!callout->ccin)
+				goto free_mem;
 		}
 	}
 
 	return 0;
+
+free_mem:
+	if (callout->procedure)
+		free(callout->procedure);
+
+	if (callout->location)
+		free(callout->location);
+
+	if (callout->fru)
+		free(callout->fru);
+
+	if (callout->serial)
+		free(callout->serial);
+
+	if (callout->ccin)
+		free(callout->ccin);
+
+	free(callout);
+
+	return 1;
 }
 
 int
@@ -487,6 +515,9 @@ servicelog_event_query(servicelog *slog, char *query,
 			e->next = malloc(sizeof(struct sl_event));
 			e = e->next;
 		}
+
+		if (!e)
+			return 1;
 		memset(e, 0, sizeof(struct sl_event));
 
 		n_cols = sqlite3_column_count(stmt);
@@ -516,33 +547,39 @@ servicelog_event_query(servicelog *slog, char *query,
 				e->severity = sqlite3_column_int(stmt, i);
 			else if (!strcmp(name, "platform")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				e->platform = malloc(strlen(str) + 1);
-				strcpy(e->platform, str);
+				e->platform = strdup(str);
+				if (!e->platform)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "machine_serial")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				e->machine_serial = malloc(strlen(str) + 1);
-				strcpy(e->machine_serial, str);
+				e->machine_serial = strdup(str);
+				if (!e->machine_serial)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "machine_model")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				e->machine_model = malloc(strlen(str) + 1);
-				strcpy(e->machine_model, str);
+				e->machine_model = strdup(str);
+				if (!e->machine_model)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "nodename")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				e->nodename = malloc(strlen(str) + 1);
-				strcpy(e->nodename, str);
+				e->nodename = strdup(str);
+				if (!e->nodename)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "refcode")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				e->refcode = malloc(strlen(str) + 1);
-				strcpy(e->refcode, str);
+				e->refcode = strdup(str);
+				if (!e->refcode)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "description")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				e->description = malloc(strlen(str) + 1);
-				strcpy(e->description, str);
+				e->description = strdup(str);
+				if (!e->description)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "serviceable"))
 				e->serviceable = sqlite3_column_int(stmt, i);
@@ -563,8 +600,9 @@ servicelog_event_query(servicelog *slog, char *query,
 				sz = sqlite3_column_bytes(stmt, i);
 				if (sz > 0) {
 					e->raw_data_len = sz;
-					e->raw_data = (unsigned char *)
-								malloc(sz);
+					e->raw_data = malloc(sz);
+					if (!e->raw_data)
+						goto free_mem;
 					memcpy(e->raw_data, b, sz);
 				}
 
@@ -609,6 +647,32 @@ servicelog_event_query(servicelog *slog, char *query,
 	}
 
 	return 0;
+
+free_mem:
+	if (e->platform)
+		free(e->platform);
+
+	if (e->machine_serial)
+		free(e->machine_serial);
+
+	if (e->machine_model)
+		free(e->machine_model);
+
+	if (e->nodename)
+		free(e->nodename);
+
+	if (e->refcode)
+		free(e->refcode);
+
+	if (e->description)
+		free(e->description);
+
+	if (e->raw_data)
+		free(e->raw_data);
+
+	free(e);
+
+	return 1;
 }
 
 int
@@ -669,7 +733,7 @@ delete_row(servicelog *slog, const char *table, const char *id_column,
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
 	if (rc != SQLITE_OK) {
 		snprintf(slog->error, SL_MAX_ERR, "DELETE error (%d): %s",
-			 					rc, err);
+								rc, err);
 		sqlite3_free(err);
 	}
 	return rc;
@@ -687,7 +751,7 @@ servicelog_event_delete(servicelog *slog, uint64_t event_id)
 	rc = sqlite3_exec(slog->db, "BEGIN TRANSACTION", NULL, NULL, &err);
 	if (rc != SQLITE_OK) {
 		snprintf(slog->error, SL_MAX_ERR, "SQL error (%d): %s",
-				 				rc, err);
+								rc, err);
 		sqlite3_free(err);
 		return 2;
 	}
