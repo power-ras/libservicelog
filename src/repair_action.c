@@ -15,7 +15,7 @@
  * GNU Library General Public License for more details.
  *
  * You should have received a copy of the GNU Library General Public
- * Licence along with this program; if not, see <http://www.gnu.org/licenses/>. 
+ * Licence along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -327,7 +327,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 
 		if (rc == SQLITE_DONE)
 			continue;
-		
+
 		if (rc != SQLITE_ROW) {
 			snprintf(slog->error, SL_MAX_ERR, "Query error (%d): "
 				 "%s", rc, sqlite3_errmsg(slog->db));
@@ -342,6 +342,8 @@ servicelog_repair_query(servicelog *slog, char *query,
 			r->next = malloc(sizeof(struct sl_repair_action));
 			r = r->next;
 		}
+		if (!r)
+			return 1;
 		memset(r, 0, sizeof(struct sl_repair_action));
 
 		n_cols = sqlite3_column_count(stmt);
@@ -362,41 +364,69 @@ servicelog_repair_query(servicelog *slog, char *query,
 			}
 			else if (!strcmp(name, "procedure")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				r->procedure = malloc(strlen(str) + 1);
-				strcpy(r->procedure, str);
+				r->procedure = strdup(str);
+				if (!r->procedure)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "location")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				r->location = malloc(strlen(str) + 1);
-				strcpy(r->location, str);
+				r->location = strdup(str);
+				if (!r->location)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "platform")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				r->platform = malloc(strlen(str) + 1);
-				strcpy(r->platform, str);
+				r->platform = strdup(str);
+				if (!r->platform)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "machine_serial")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				r->machine_serial = malloc(strlen(str) + 1);
-				strcpy(r->machine_serial, str);
+				r->machine_serial = strdup(str);
+				if (!r->machine_serial)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "machine_model")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				r->machine_model = malloc(strlen(str) + 1);
-				strcpy(r->machine_model, str);
+				r->machine_model = strdup(str);
+				if (!r->machine_model)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "notes")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				r->notes = malloc(strlen(str) + 1);
-				strcpy(r->notes, str);
+				r->notes = strdup(str);
+				if (!r->notes)
+					goto free_mem;
 			}
-		}
+		} /* for */
 	} while (rc != SQLITE_DONE);
 
 	sqlite3_finalize(stmt);
 
-
 	return 0;
+
+free_mem:
+	if (r->procedure)
+		free(r->procedure);
+
+	if (r->location)
+		free(r->location);
+
+	if (r->platform)
+		free(r->platform);
+
+	if (r->machine_serial)
+		free(r->machine_serial);
+
+	if (r->machine_model)
+		free(r->machine_model);
+
+	if (r->notes)
+		free(r->notes);
+
+	free(r);
+
+	return 1;
 }
 
 int
