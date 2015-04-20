@@ -183,30 +183,54 @@ retrieve_addl_data_os(void *e, int argc, char **argv, char **column)
 	struct sl_data_os *os;
 
 	event->addl_data = malloc(sizeof(struct sl_data_os));
-	os = (struct sl_data_os *)event->addl_data;
+	if (!event->addl_data)
+		return 1;
 
+	os = (struct sl_data_os *)event->addl_data;
 	memset(os, 0, sizeof(struct sl_data_os));
 
 	for (i=0; i<argc; i++) {
 		if (!strcmp(column[i], "version")) {
-			os->version = malloc(strlen(argv[i]) + 1);
-			strcpy(os->version, argv[i]);
+			os->version = strdup(argv[i]);
+			if (!os->version)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "subsystem")) {
-			os->subsystem = malloc(strlen(argv[i]) + 1);
-			strcpy(os->subsystem, argv[i]);
+			os->subsystem = strdup(argv[i]);;
+			if (!os->subsystem)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "driver")) {
-			os->driver = malloc(strlen(argv[i]) + 1);
-			strcpy(os->driver, argv[i]);
+			os->driver = strdup(argv[i]);
+			if (!os->driver)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "device")) {
-			os->device = malloc(strlen(argv[i]) + 1);
-			strcpy(os->device, argv[i]);
+			os->device = strdup(argv[i]);
+			if (!os->device)
+				goto free_mem;
 		}
 	}
 
 	return 0;
+
+free_mem:
+	if (os->version)
+		free(os->version);
+
+	if (os->subsystem)
+		free(os->subsystem);
+
+	if (os->driver)
+		free(os->driver);
+
+	if (os->device)
+		free(os->device);
+
+	if (event->addl_data);
+		free(event->addl_data);
+
+	return 1;
 }
 
 /**
@@ -226,8 +250,10 @@ retrieve_addl_data_rtas(void *e, int argc, char **argv, char **column)
 	struct sl_data_rtas *rtas;
 
 	event->addl_data = malloc(sizeof(struct sl_data_rtas));
-	rtas = (struct sl_data_rtas *)event->addl_data;
+	if (!event->addl_data)
+		return 1;
 
+	rtas = (struct sl_data_rtas *)event->addl_data;
 	memset(rtas, 0, sizeof(struct sl_data_rtas));
 
 	for (i=0; i<argc; i++) {
@@ -301,22 +327,38 @@ retrieve_addl_data_enclosure(void *e, int argc, char **argv, char **column)
 	struct sl_data_enclosure *encl;
 
 	event->addl_data = malloc(sizeof(struct sl_data_enclosure));
-	encl = (struct sl_data_enclosure *)event->addl_data;
+	if (!event->addl_data)
+		return 1;
 
+	encl = (struct sl_data_enclosure *)event->addl_data;
 	memset(encl, 0, sizeof(struct sl_data_enclosure));
 
 	for (i=0; i<argc; i++) {
 		if (!strcmp(column[i], "enclosure_serial")) {
-			encl->enclosure_serial = malloc(strlen(argv[i]) + 1);
-			strcpy(encl->enclosure_serial, argv[i]);
+			encl->enclosure_serial = strdup(argv[i]);
+			if (!encl->enclosure_serial)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "enclosure_model")) {
-			encl->enclosure_model = malloc(strlen(argv[i]) + 1);
-			strcpy(encl->enclosure_model, argv[i]);
+			encl->enclosure_model = strdup(argv[i]);
+			if (!encl->enclosure_model)
+				goto free_mem;
 		}
-	}
+	} /* for */
 
 	return 0;
+
+free_mem:
+	if (encl->enclosure_serial)
+		free(encl->enclosure_serial);
+
+	if (encl->enclosure_model)
+		free(encl->enclosure_model);
+
+	if (event->addl_data)
+		free(event->addl_data);
+
+	return 1;
 }
 
 /**
@@ -336,8 +378,10 @@ retrieve_addl_data_bmc(void *e, int argc, char **argv, char **column)
 	struct sl_data_bmc *bmc;
 
 	event->addl_data = malloc(sizeof(struct sl_data_bmc));
-	bmc = (struct sl_data_bmc *)event->addl_data;
+	if (!event->addl_data)
+		return 1;
 
+	bmc = (struct sl_data_bmc *)event->addl_data;
 	memset(bmc, 0, sizeof(struct sl_data_bmc));
 
 	for (i=0; i<argc; i++) {
