@@ -776,6 +776,7 @@ print_addl_data_rtas(FILE *str, struct sl_event *event, int verbosity)
 		case 0xE0:
 			detail = " - Platform powered off by user without "
 				"normal shutdown (abnormal power-off)";
+			break;
 		default:
 			detail = "";
 	}
