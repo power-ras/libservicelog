@@ -657,6 +657,7 @@ sl_print_ppc64_rtas_event(FILE *str, void *event, int verbosity)
 		case 0xE0:
 			detail = " - Platform powered off by user without "
 				"normal shutdown (abnormal power-off)";
+			break;
 		default:
 			detail = "";
 	}
