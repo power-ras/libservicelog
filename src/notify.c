@@ -509,7 +509,7 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 			pos = strchr(cmd, ' ');
 			if (pos) {
 				*pos++ = '\0';
-				for (i = 1; i <= 30; i++) {
+				for (i = 1; i < 30; i++) {
 					if (!pos || !(*pos))
 						break;
 					while (*pos == ' ')
