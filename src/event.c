@@ -18,18 +18,19 @@
  * Licence along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <sqlite3.h>
+#include <inttypes.h>
+#include <sys/types.h>
+#include <sys/utsname.h>
 // #define _XOPEN_SOURCE
 #define __USE_XOPEN
 #include <time.h>
-#include <grp.h>
-#include <sys/types.h>
-#include <sys/utsname.h>
-#include <sqlite3.h>
 #include "slog_internal.h"
 
 static char *severity_text[] = { "", "DEBUG", "INFO", "EVENT", "WARNING",
@@ -102,7 +103,7 @@ put_blob(sqlite3 *db, char *table, uint64_t row, char *column,
 	char query[80];
 	sqlite3_stmt *stmt;
 
-	snprintf(query, 80, "UPDATE %s SET %s = ? WHERE id = %llu",
+	snprintf(query, 80, "UPDATE %s SET %s = ? WHERE id = ""%" PRIu64 ,
 		 table, column, row);
 
 	do {
@@ -334,7 +335,7 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 
 			snprintf(buf, SQL_MAXLEN, "INSERT INTO callouts (event_id, "
 				 "priority, type, procedure, location, fru, "
-				 "serial, ccin) VALUES (%llu, '%c', %d, '%s', "
+				 "serial, ccin) VALUES (""%" PRIu64 ", '%c', %d, '%s', "
 				 "'%s', '%s', '%s', '%s');", event_id,
 				 callout->priority, callout->type, proc, loc,
 				 fru, serial, ccin);
@@ -454,7 +455,7 @@ servicelog_event_get(servicelog *slog, uint64_t event_id,
 {
 	char query[30];
 
-	snprintf(query, 30, "id=%llu", event_id);
+	snprintf(query, 30, "id=""%" PRIu64 , event_id);
 	return servicelog_event_query(slog, query, event);
 }
 
@@ -622,7 +623,7 @@ servicelog_event_query(servicelog *slog, char *query,
 	while (e) {
 		/* Retrieve any callouts associated with this event */
 		snprintf(buf, 512, "SELECT * FROM callouts WHERE "
-			 "event_id = %llu", e->id);
+			 "event_id = ""%" PRIu64 , e->id);
 		rc = sqlite3_exec(slog->db, buf, build_callout, &(e->callouts),
 				  NULL);
 
@@ -632,7 +633,7 @@ servicelog_event_query(servicelog *slog, char *query,
 			retrieve_fcn = addl_data_fcns[e->type].retrieve;
 
 			snprintf(buf, 512, "SELECT * FROM %s WHERE "
-				 "event_id = %llu", table, e->id);
+				 "event_id = ""%" PRIu64, table, e->id);
 
 			rc = sqlite3_exec(slog->db, buf, retrieve_fcn, e, &err);
 			if (rc != SQLITE_OK) {
@@ -684,7 +685,7 @@ servicelog_event_close(servicelog *slog, uint64_t event_id)
 	if (slog == NULL)
 		return 1;
 
-	snprintf(buf, 80, "UPDATE events SET closed=1 WHERE id=%llu",
+	snprintf(buf, 80, "UPDATE events SET closed=1 WHERE id=""%" PRIu64,
 		 event_id);
 
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
@@ -708,8 +709,8 @@ servicelog_event_repair(servicelog *slog, uint64_t event_id,
 	if (slog == NULL)
 		return 1;
 
-	snprintf(buf, 80, "UPDATE events SET closed=1, repair=%llu "
-		 "WHERE id=%llu", repair_id, event_id);
+	snprintf(buf, 80, "UPDATE events SET closed=1, repair=""%" PRIu64 " WHERE "
+		"id=""%" PRIu64, repair_id, event_id);
 
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
 	if (rc != SQLITE_OK) {
@@ -729,7 +730,7 @@ delete_row(servicelog *slog, const char *table, const char *id_column,
 	int rc;
 	char buf[80], *err;
 
-	snprintf(buf, 80, "DELETE FROM %s WHERE %s=%llu", table, id_column, id);
+	snprintf(buf, 80, "DELETE FROM %s WHERE %s=""%" PRIu64 , table, id_column, id);
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
 	if (rc != SQLITE_OK) {
 		snprintf(slog->error, SL_MAX_ERR, "DELETE error (%d): %s",
@@ -817,7 +818,7 @@ servicelog_event_print(FILE *str, struct sl_event *event, int verbosity)
 			struct tm time;
 
 			/* just print param/value pairs */
-			count += fprintf(str, "ServicelogID: %llu\n",
+			count += fprintf(str, "ServicelogID: ""%" PRIu64 "\n",
 					 event->id);
 			localtime_r(&(event->time_logged), &time);
 			count += fprintf(str, "LogTime: %02d/%02d/%04d "
@@ -866,7 +867,7 @@ servicelog_event_print(FILE *str, struct sl_event *event, int verbosity)
 			count += fprintf(str, "CallHomeStatus: %d\n",
 					 event->call_home_status);
 			count += fprintf(str, "Closed: %d\n", event->closed);
-			count += fprintf(str, "RepairID: %llu\n",
+			count += fprintf(str, "RepairID: ""%" PRIu64 "\n",
 					 event->repair);
 			while (callout != NULL) {
 				count += fprintf(str, "Callout: %c %d %s %s %s "

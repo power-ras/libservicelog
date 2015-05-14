@@ -30,6 +30,7 @@
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <sqlite3.h>
+#include  <inttypes.h>
 #include "slog_internal.h"
 
 static void
@@ -284,7 +285,7 @@ servicelog_repair_get(servicelog *slog, uint64_t repair_id,
 {
 	char query[30];
 
-	snprintf(query, 30, "id=%llu", repair_id);
+	snprintf(query, 30, "id=""%" PRIu64, repair_id);
 	return servicelog_repair_query(slog, query, repair);
 }
 
@@ -438,7 +439,7 @@ servicelog_repair_delete(servicelog *slog, uint64_t repair_id)
 	if (slog == NULL)
 		return 1;
 
-	snprintf(buf, 80, "DELETE FROM repair_actions WHERE id=%llu",
+	snprintf(buf, 80, "DELETE FROM repair_actions WHERE id=""%" PRIu64,
 		 repair_id);
 
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
@@ -475,7 +476,7 @@ servicelog_repair_print(FILE *str, struct sl_repair_action *repair,
 		if (verbosity < 0) {
 			struct tm time;
 
-			count += fprintf(str, "ServicelogID: %llu\n",
+			count += fprintf(str, "ServicelogID: ""%" PRIu64 "\n",
 					 repair->id);
 			localtime_r(&(repair->time_logged), &time);
 			count += fprintf(str, "LogTime: %02d/%02d/%04d "

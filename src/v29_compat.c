@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include <time.h>
+#include <inttypes.h>
 #include "slog_internal.h"
 #define EXCLUDE_SERVICELOG_COMPAT_DECLS
 #include "../servicelog-1/libservicelog.h"
@@ -63,7 +64,7 @@ convert_key_to_v29(servicelog *log, uint64_t key64, uint32_t *key32,
 	*key32 = (uint32_t) key64;
 	if (*key32 != key64) {
 		snprintf(log->error, SL_MAX_ERR,
-			"v1+ %s ID %lld truncated to 32 bits", key_type, key64);
+			"v1+ %s ID ""%"PRIu64 "truncated to 32 bits", key_type, key64);
 		return EDOM;
 	}
 	return 0;
@@ -488,7 +489,7 @@ find_repaired_events(servicelog *log, uint64_t repair_id,
 {
 	char query[40];
 
-	sprintf(query, "repair=%lld", repair_id);
+	sprintf(query, "repair=""%" PRIu64, repair_id);
 	return servicelog_event_query(log, query, events);
 }
 
@@ -1057,8 +1058,8 @@ _convert_v1_sl_notify_to_v29(struct v29_servicelog *slog, struct v29_sl_notify *
 		v29nfy_gram_fini();
 		if (parse_result != 0 || semantic_errors != 0) {
 			snprintf(log->error, SL_MAX_ERR, "can't translate "
-				"match string '%s' for v1+ sl_notify %llu "
-				"to v0.2.9 sl_notify", v1->match, v1->id);
+				"match string '%s' for v1+ sl_notify ""%" PRIu64 "to "
+				"v0.2.9 sl_notify", v1->match, v1->id);
 			return ENOTSUP;
 		}
 	 }

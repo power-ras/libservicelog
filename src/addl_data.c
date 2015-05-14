@@ -20,10 +20,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <sys/utsname.h>
+#include <stdint.h>
 #include <sqlite3.h>
+#include <inttypes.h>
+#include <sys/utsname.h>
 #include "slog_internal.h"
 
 /*
@@ -66,7 +67,7 @@ insert_addl_data_os(servicelog *slog, struct sl_event *event)
 		version = os->version;
 
 	snprintf(buf, 1024, "INSERT OR REPLACE INTO os (event_id, version, subsystem, "
-		 "driver, device) VALUES (%llu, '%s', '%s', '%s', '%s');",
+		 "driver, device) VALUES (""%" PRIu64 ", '%s', '%s', '%s', '%s');",
 		 event->id, version, os->subsystem, os->driver, os->device);
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, NULL);
 	if (rc != SQLITE_OK)
@@ -95,8 +96,8 @@ insert_addl_data_rtas(servicelog *slog, struct sl_event *event)
 		 "platform_id, creator_id, subsystem_id, pel_severity, "
 		 "event_type, event_subtype, kernel_id, addl_word1, "
 		 "addl_word2, addl_word3, addl_word4, addl_word5, addl_word6, "
-		 "addl_word7, addl_word8) VALUES (%llu, %u, %u, '%c', %u, %u, "
-		 "%u, %u, %u, %u, %u, %u, %u, %u, %u, %u, %u);", event->id,
+		 "addl_word7, addl_word8) VALUES (""%" PRIu64 ", %u, %u, '%c', %u, %u, "
+		 "%u, %u, %u, %u, %u, %u, %u, %u, %u, %u,%u);", event->id,
 		 rtas->action_flags, rtas->platform_id, rtas->creator_id,
 		 rtas->subsystem_id, rtas->pel_severity, rtas->event_type,
 		 rtas->event_subtype, rtas->kernel_id, rtas->addl_words[0],
@@ -127,7 +128,7 @@ insert_addl_data_enclosure(servicelog *slog, struct sl_event *event)
 	encl = (struct sl_data_enclosure *)event->addl_data;
 
 	snprintf(buf, 1024, "INSERT OR REPLACE INTO enclosure (event_id, enclosure_model, "
-		 "enclosure_serial) VALUES (%llu, '%s', '%s');", event->id,
+		 "enclosure_serial) VALUES (""%" PRIu64 ", '%s', '%s');", event->id,
 		 encl->enclosure_model, encl->enclosure_serial);
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, NULL);
 	if (rc != SQLITE_OK)
@@ -154,7 +155,7 @@ insert_addl_data_bmc(servicelog *slog, struct sl_event *event)
 
 	snprintf(buf, 1024, "INSERT OR REPLACE INTO bmc (event_id, sel_id, sel_type, "
 		 "generator, version, sensor_type, sensor_number, event_class, "
-		 "event_type, direction) VALUES (%llu, %u, %u, %u, %u, %u, %u, "
+		 "event_type, direction) VALUES (""%" PRIu64 ", %u, %u, %u, %u, %u, %u, "
 		 "%u, %u, %d);", event->id, bmc->sel_id, bmc->sel_type,
 		 bmc->generator, bmc->version, bmc->sensor_type,
 		 bmc->sensor_number, bmc->event_class, bmc->event_type,

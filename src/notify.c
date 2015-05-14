@@ -18,16 +18,17 @@
  * Licence along with this program; if not, see <http://www.gnu.org/licenses/>. 
  */
 
+#include <grp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#define __USE_XOPEN	// for strptime
-#include <time.h>
-#include <grp.h>
+#include <inttypes.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
+#define __USE_XOPEN	// for strptime
+#include <time.h>
 #include <sqlite3.h>
 #include "slog_internal.h"
 
@@ -163,7 +164,7 @@ servicelog_notify_get(servicelog *slog, uint64_t notify_id,
 {
 	char query[30];
 
-	snprintf(query, 30, "id=%llu", notify_id);
+	snprintf(query, 30, "id=""%" PRIu64 " ", notify_id);
 	return servicelog_notify_query(slog, query, notify);
 }
 
@@ -208,7 +209,7 @@ servicelog_notify_query(servicelog *slog, char *query,
 
 		if (rc == SQLITE_DONE)
 			continue;
-		
+
 		if (rc != SQLITE_ROW) {
 			snprintf(slog->error, SL_MAX_ERR, "Query error (%d): "
 				 "%s", rc, sqlite3_errmsg(slog->db));
@@ -311,7 +312,7 @@ servicelog_notify_update(servicelog *slog, uint64_t notify_id,
 	format_text_to_insert(notify->command, command, DESC_MAXLEN);
 
 	snprintf(buf, SQL_MAXLEN, "UPDATE notifications SET notify=%d, "
-		 "command='%s', method=%d, match='%s') WHERE id=%llu",
+		 "command='%s', method=%d, match='%s') WHERE id=""%" PRIu64,
 		 notify->notify, command, notify->method,
 		 notify->match, notify_id);
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
@@ -337,7 +338,7 @@ servicelog_notify_delete(servicelog *slog, uint64_t notify_id)
 	if (slog == NULL)
 		return 1;
 
-	snprintf(buf, 80, "DELETE FROM notifications WHERE id=%llu",
+	snprintf(buf, 80, "DELETE FROM notifications WHERE id=""%" PRIu64,
 		 notify_id);
 
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
@@ -373,7 +374,7 @@ servicelog_notify_print(FILE *str, struct sl_notify *notify, int verbosity)
 		if (verbosity < 0) {
 			struct tm time;
 
-			count += fprintf(str, "ServicelogID: %llu\n",
+			count += fprintf(str, "ServicelogID: ""%" PRIu64 "\n",
 					 notify->id);
 			localtime_r(&(notify->time_logged), &time);
 			count += fprintf(str, "LogTime: %02d/%02d/%04d "
@@ -471,7 +472,7 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 			id = repair->id;
 
 		if (notify->method == SL_METHOD_NUM_VIA_CMD_LINE)
-			snprintf(cmd, DESC_MAXLEN + 10, "%s %llu",
+			snprintf(cmd, DESC_MAXLEN + 10, "%s ""%" PRIu64,
 						 notify->command, id);
 		else {
 			/* need pipes to pass in stdin */
@@ -536,7 +537,7 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 
 		if (notify->method == SL_METHOD_NUM_VIA_STDIN) {
 			close(pipe_fd[0]);
-			snprintf(buf, 128, "%llu", id);
+			snprintf(buf, 128, "%" PRIu64, id);
 			write(pipe_fd[1], buf, strlen(buf));
 			close(pipe_fd[1]);
 		}
@@ -635,9 +636,9 @@ check_notify(void *d, int argc, char **argv, char **column)
 	}
 
 	if (!notify.match || strlen(notify.match) == 0)
-		snprintf(query, 1024, "id=%llu", data->id);
+		snprintf(query, 1024, "id=""%" PRIu64, data->id);
 	else
-		snprintf(query, 1024, "(%s) AND id=%llu", notify.match,
+		snprintf(query, 1024, "(%s) AND id=""%" PRIu64, notify.match,
 								data->id);
 
 	if (data->notify == SL_NOTIFY_EVENTS) {
