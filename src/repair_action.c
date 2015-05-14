@@ -118,7 +118,8 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	int rc;
 	uint64_t ra_id = 0;
 	char *err;
-	char buf[SQL_MAXLEN], timebuf[32], serialbuf[20], modelbuf[20];
+	char buf[SQL_MAXLEN], timebuf[32];
+	char serialbuf[20] = {0,}, modelbuf[20] = {0,};
 	char notes[DESC_MAXLEN];
 	struct tm *t;
 	struct utsname uname_buf;
@@ -158,15 +159,19 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	t = gmtime(&(repair->time_repair));
 	strftime(timebuf, 32, "%Y-%m-%d %H:%M:%S", t);
 
-	if (repair->machine_serial == NULL)
+	if (repair->machine_serial == NULL) {
 		get_system_info("serial", serialbuf, 20);
-	else
-		strncpy(serialbuf, repair->machine_serial, 20);
+	} else {
+		strncpy(serialbuf, repair->machine_serial, 19);
+		serialbuf[19] = '\0';
+	}
 
-	if (repair->machine_model == NULL)
+	if (repair->machine_model == NULL) {
 		get_system_info("model", modelbuf, 20);
-	else
+	} else {
 		strncpy(modelbuf, repair->machine_model, 20);
+		modelbuf[19] = '\0';
+	}
 
 	rc = uname(&uname_buf);
 	if (rc != 0) {
