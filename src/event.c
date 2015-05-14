@@ -136,7 +136,8 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 	int rc, attempts = 0, n_callouts = 0;
 	uint64_t event_id = 0;
 	char *err;
-	char buf[SQL_MAXLEN], timebuf[32], serialbuf[20], modelbuf[20];
+	char buf[SQL_MAXLEN], timebuf[32];
+	char serialbuf[20] = {0,} , modelbuf[20] = {0,};
 	char description[DESC_MAXLEN];
 	struct tm *t;
 	struct sl_callout *callout;
@@ -231,15 +232,19 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 	t = gmtime(&(event->time_event));
 	strftime(timebuf, 32, "%Y-%m-%d %H:%M:%S", t);
 
-	if (event->machine_serial == NULL)
+	if (event->machine_serial == NULL) {
 		get_system_info("serial", serialbuf, 20);
-	else
-		strncpy(serialbuf, event->machine_serial, 20);
+	} else {
+		strncpy(serialbuf, event->machine_serial, 19);
+		serialbuf[19] = '\0';
+	} /* if */
 
-	if (event->machine_model == NULL)
+	if (event->machine_model == NULL) {
 		get_system_info("model", modelbuf, 20);
-	else
-		strncpy(modelbuf, event->machine_model, 20);
+	} else {
+		strncpy(modelbuf, event->machine_model, 19);
+		modelbuf[19] = '\0';
+	} /* if */
 
 	if (!event->serviceable)
 		event->closed = 1;
