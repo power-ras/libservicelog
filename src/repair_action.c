@@ -134,6 +134,7 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 
 	if (slog == NULL)
 		return 1;
+
 	if (repair == NULL) {
 		snprintf(slog->error, SL_MAX_ERR, "Invalid parameter(s)");
 		return 1;
@@ -298,7 +299,10 @@ servicelog_repair_query(servicelog *slog, char *query,
 	sqlite3_stmt *stmt;
 	struct sl_repair_action *r = NULL;
 
-	if ((slog == NULL) || (query == NULL) || (repair == NULL)) {
+	if (slog == NULL)
+	       return 1;
+
+	if ((query == NULL) || (repair == NULL)) {
 		snprintf(slog->error, SL_MAX_ERR, "Invalid parameter(s)");
 		return 1;
 	}
