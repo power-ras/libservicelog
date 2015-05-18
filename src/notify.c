@@ -224,6 +224,10 @@ servicelog_notify_query(servicelog *slog, char *query,
 			n->next = malloc(sizeof(struct sl_notify));
 			n = n->next;
 		}
+
+		if (!n)
+			goto free_mem;
+
 		memset(n, 0, sizeof(struct sl_notify));
 
 		n_cols = sqlite3_column_count(stmt);
@@ -246,22 +250,28 @@ servicelog_notify_query(servicelog *slog, char *query,
 				n->notify = sqlite3_column_int(stmt, i);
 			else if (!strcmp(name, "command")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				n->command = malloc(strlen(str) + 1);
-				strcpy(n->command, str);
+				n->command = strdup(str);
+				if (!n->command)
+					goto free_mem;
 			}
 			else if (!strcmp(name, "method"))
 				n->method = sqlite3_column_int(stmt, i);
 			else if (!strcmp(name, "match")) {
 				str = (char *)sqlite3_column_text(stmt, i);
-				n->match = malloc(strlen(str) + 1);
-				strcpy(n->match, str);
+				n->match = strdup(str);
+				if (!n->match)
+					goto free_mem;
 			}
-		}
+		} /* for */
 	} while (rc != SQLITE_DONE);
 
 	sqlite3_finalize(stmt);
 
 	return 0;
+free_mem:
+	servicelog_notify_free(*notify);
+
+	return 1;
 }
 
 int
@@ -600,7 +610,7 @@ struct check_notify_data {
 static int
 check_notify(void *d, int argc, char **argv, char **column)
 {
-	int i;
+	int i, rc = 1;
 	char query[1024];
 	struct tm t;
 	struct check_notify_data *data = (struct check_notify_data *)d;
@@ -624,14 +634,16 @@ check_notify(void *d, int argc, char **argv, char **column)
 		else if (!strcmp(column[i], "notify"))
 			notify.notify = atoi(argv[i]);
 		else if (!strcmp(column[i], "command")) {
-			notify.command = malloc(strlen(argv[i]) + 1);
-			strcpy(notify.command, argv[i]);
+			notify.command = strdup(argv[i]);
+			if (!notify.command)
+				goto free_mem;
 		}
 		else if (!strcmp(column[i], "method"))
 			notify.method = atoi(argv[i]);
 		else if (!strcmp(column[i], "match")) {
-			notify.match = malloc(strlen(argv[i]) + 1);
-			strcpy(notify.match, argv[i]);
+			notify.match = strdup(argv[i]);
+			if (!notify.match)
+				goto free_mem;
 		}
 	}
 
@@ -660,10 +672,17 @@ check_notify(void *d, int argc, char **argv, char **column)
 		servicelog_repair_free(repairs);
 	}
 
-	free(notify.command);
-	free(notify.match);
+	/* Return successful */
+	rc = 0;
 
-	return 0;
+free_mem:
+	if (notify.command)
+		free(notify.command);
+
+	if (notify.match)
+		free(notify.match);
+
+	return rc;
 }
 
 /**
