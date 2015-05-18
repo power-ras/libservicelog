@@ -139,7 +139,7 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 	char buf[SQL_MAXLEN], timebuf[32], serialbuf[20], modelbuf[20];
 	char description[DESC_MAXLEN];
 	struct tm *t;
-	struct sl_callout *callout = event->callouts;
+	struct sl_callout *callout;
 	struct utsname uname_buf;
 
 	if (new_id != NULL)
@@ -147,7 +147,10 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 
 	/* Input validation begins here */
 
-	if ((slog == NULL) || (event == NULL)) {
+	if (slog == NULL)
+	       return 1;
+
+	if (event == NULL) {
 		snprintf(slog->error, SL_MAX_ERR,
 			 "Invalid parameter(s) to servicelog_event_log()");
 		return 1;
@@ -216,7 +219,7 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 	}
 
 	/* Input data looks valid at this point */
-
+	callout = event->callouts;
 	while (callout) {
 		n_callouts++;
 		callout = callout->next;
@@ -469,7 +472,10 @@ servicelog_event_query(servicelog *slog, char *query,
 	int (*retrieve_fcn)(void *, int, char **, char **);
 	sqlite3_stmt *stmt;
 
-	if ((slog == NULL) || (query == NULL) || (event == NULL)) {
+	if (slog == NULL)
+	       return 1;
+
+	if ((query == NULL) || (event == NULL)) {
 		snprintf(slog->error, SL_MAX_ERR, "Invalid parameter(s)");
 		return 1;
 	}
