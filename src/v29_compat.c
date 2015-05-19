@@ -487,9 +487,9 @@ static int
 find_repaired_events(servicelog *log, uint64_t repair_id,
 						struct sl_event **events)
 {
-	char query[40];
+	char query[40] = {0,};
 
-	sprintf(query, "repair=""%" PRIu64, repair_id);
+	snprintf(query, 39, "repair=""%" PRIu64, repair_id);
 	return servicelog_event_query(log, query, events);
 }
 
@@ -698,8 +698,8 @@ v29_types_to_v1_match(char *next, uint64_t bitmap)
 	for (t = SL_TYPE_OS; t <= SL_TYPE_PPC64_ENCL; t++) {
 		if (bitmap & (1 << t)) {
 			if (++ntypes > 1)
-				next += sprintf(next, " OR ");
-			next += sprintf(next, "type == %d",
+				next += snprintf(next, 5, " OR ");
+			next += snprintf(next, 10, "type == %d",
 						convert_type_to_v1(t));
 		}
 	}
@@ -724,7 +724,7 @@ int
 convert_v29_query_to_v1(struct sl_query *v29_query, char **v1_where)
 {
 	char tmp[1024];
-	char *next = tmp;
+	char *next = tmp, *end = (tmp + sizeof(tmp) - 1);
 	char *and_connector = " AND ";
 	char *connector = "";
 
@@ -743,37 +743,41 @@ convert_v29_query_to_v1(struct sl_query *v29_query, char **v1_where)
 	// Create time boundaries
 	if (v29_query->start_time) {
 		char d[32];
-		next += sprintf(next, "%stime_event >= '%s'", connector,
-			encode_db_date(d, 32, v29_query->start_time));
+		next += snprintf(next, (end - next), "%stime_event >= '%s'",
+				connector,
+				encode_db_date(d, 32, v29_query->start_time));
 		connector = and_connector;
 	}
 
 	if (v29_query->end_time) {
 		char d[32];
-		next += sprintf(next, "%stime_event <= '%s'", connector,
+		next += snprintf(next, (end - next), "%stime_event <= '%s'",
+			connector,
 			encode_db_date(d, 32, v29_query->end_time));
 		connector = and_connector;
 	}
 
 	if (v29_query->is_serviceable == SL_QUERY_YES) {
-		next += sprintf(next, "%sserviceable = 1", connector);
+		next += snprintf(next, (end - next), "%sserviceable = 1",
+			connector);
 		connector = and_connector;
 	} else if (v29_query->is_serviceable == SL_QUERY_NO) {
-		next += sprintf(next, "%sserviceable = 0", connector);
+		next += snprintf(next, (end - next), "%sserviceable = 0",
+			connector);
 		connector = and_connector;
 	}
 
 	if (v29_query->is_repaired == SL_QUERY_YES) {
-		next += sprintf(next, "%srepair != 0", connector);
+		next += snprintf(next, (end - next), "%srepair != 0", connector);
 		connector = and_connector;
 	} else if (v29_query->is_repaired == SL_QUERY_NO) {
-		next += sprintf(next, "%srepair = 0", connector);
+		next += snprintf(next, (end - next), "%srepair = 0", connector);
 		connector = and_connector;
 	}
 
 	if (v29_query->severity > 1) {
-		next += sprintf(next, "%sseverity >= %d", connector,
-						v29_query->severity);
+		next += snprintf(next, (end - next), "%sseverity >= %d",
+			connector, v29_query->severity);
 		connector = and_connector;
 	}
 
@@ -835,7 +839,7 @@ query_repair_events(servicelog *log, struct sl_query *v29_query,
 {
 	int result;
 	char v1_match[1024];
-	char *next = v1_match;
+	char *next = v1_match, *end = (next + sizeof(v1_match) - 1);
 	char *connector = "";
 	struct sl_repair_action *v1, *v1_repairs;
 	struct sl_header *v29, *v29_repairs, **v29_next;
@@ -850,18 +854,20 @@ query_repair_events(servicelog *log, struct sl_query *v29_query,
 				|| v29_query->is_repaired == SL_QUERY_YES
 				|| v29_query->severity > SL_SEV_INFO)
 		return 0;
-	
+
 	/* Find all the repair_actions in the specified time range. */
 	*next = '\0';
 	if (v29_query->start_time) {
 		char d[32];
-		next += sprintf(next, "%stime_repair >= '%s'", connector,
+		next += snprintf(next, (end - next), "%stime_repair >= '%s'",
+			connector,
 			encode_db_date(d, 32, v29_query->start_time));
 		connector = " AND ";
 	}
 	if (v29_query->end_time) {
 		char d[32];
-		next += sprintf(next, "%stime_repair <= '%s'", connector,
+		next += snprintf(next, (end - next), "%stime_repair <= '%s'",
+			connector,
 			encode_db_date(d, 32, v29_query->end_time));
 	}
 
@@ -1212,7 +1218,7 @@ _convert_v29_sl_notify_to_v1(servicelog *log, struct v29_sl_notify *v29,
 						struct sl_notify *v1)
 {
 	char v1_match[1024];
-	char *next;
+	char *next = v1_match, *end  = (next + sizeof(v1_match) - 1);
 	char *connector = "";
 	char *and_connector = " AND ";
 
@@ -1238,16 +1244,16 @@ _convert_v29_sl_notify_to_v1(servicelog *log, struct v29_sl_notify *v29,
 	if (next > v1_match)
 		connector = and_connector;
 	if (v29->severity > 1) {
-		next += sprintf(next, "%sseverity >= %d", connector,
-							v29->severity);
+		next += snprintf(next, (end - next), "%sseverity >= %d",
+			connector, v29->severity);
 		connector = and_connector;
 	}
 	switch (v29->serviceable_event) {
 	case SL_QUERY_YES:
-		sprintf(next, "%sserviceable == 1", connector);
+		snprintf(next, (end - next), "%sserviceable == 1", connector);
 		break;
 	case SL_QUERY_NO:
-		sprintf(next, "%sserviceable == 0", connector);
+		snprintf(next, (end - next), "%sserviceable == 0", connector);
 		break;
 	}
 	v1->match = strdup(v1_match);
