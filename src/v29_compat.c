@@ -407,7 +407,7 @@ convert_encl_to_v29(servicelog *log, struct sl_event *ev, void **data29,
 	next += sizeof(encl29);
 
 	if (description_sz) {
-		strcpy(next, ev->description);
+		strncpy(next, ev->description, (ev29_sz - sizeof(encl29) - 1));
 		ev29->description = next;
 		next += description_sz;
 	}
@@ -513,6 +513,7 @@ convert_v1_repair_to_v29(servicelog *log, struct sl_repair_action *rpr1,
 	char *next;
 	size_t ev29_sz;
 	struct sl_event *re, *repaired_events = NULL;
+	int str_size;
 
 	if (find_repaired_events(log, rpr1->id, &repaired_events) != 0)
 		repaired_events = NULL;
@@ -560,13 +561,15 @@ convert_v1_repair_to_v29(servicelog *log, struct sl_repair_action *rpr1,
 	next = (char*) ev29;
 	next += sizeof(rpr29);
 
+	str_size = (ev29_sz - sizeof(rpr29) - 1);
 	if (location_sz) {
-		strcpy(next, rpr1->location);
+		strncpy(next, rpr1->location, str_size);
 		ev29->location = next;
 		next += location_sz;
+		str_size -= (strlen(location_sz) + 1);
 	}
 	if (procedure_sz) {
-		strcpy(next, rpr1->procedure);
+		strncpy(next, rpr1->procedure, str_size);
 		ev29->procedure = next;
 		next += procedure_sz;
 	}
@@ -1084,7 +1087,7 @@ _convert_v1_sl_notify_to_v29(struct v29_servicelog *slog, struct v29_sl_notify *
 	v29->method = v1->method;	// These happen to match.
 	v29->command_length = size - sizeof(struct v29_sl_notify);
 	cmd = ((char *) v29) + sizeof(struct v29_sl_notify);
-	strcpy(cmd, v1->command);
+	strncpy(cmd, v1->command, v29->command_length);
 
 	return 0;
 }
