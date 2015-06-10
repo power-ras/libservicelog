@@ -115,6 +115,7 @@ sl_printf(FILE *stream, char *fmt, ...)
     int         prnt_len;
     char        *newline = NULL;
     char        *brkpt = NULL;
+    int         size = (*buf + sizeof(buf) - 1);
 
     memset(tmpbuf, 0, sizeof(tmpbuf));
     memset(buf, 0, sizeof(buf));
@@ -152,9 +153,10 @@ sl_printf(FILE *stream, char *fmt, ...)
 
             if (newline != NULL) {
                 prnt_len = newline - &tmpbuf[offset] + 1;
-                snprintf(buf + buf_offset, prnt_len, "%s", &tmpbuf[offset]);
+                size -= buf_offset;
+                snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
                 buf_offset = strlen(buf);
-                buf_offset += sprintf(buf + buf_offset, "\n");
+                buf_offset += snprintf(buf + buf_offset, size, "\n");
                 offset += prnt_len;
                 line_offset = 0;
                 break;
@@ -171,16 +173,18 @@ sl_printf(FILE *stream, char *fmt, ...)
             }
 
             /* print up to the last brkpt */
-            snprintf(buf + buf_offset, prnt_len, "%s", &tmpbuf[offset]);
+            size -= buf_offset;
+            snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
             buf_offset = strlen(buf);
-            buf_offset += sprintf(buf + buf_offset, "\n");
+            buf_offset += snprintf(buf + buf_offset, size, "\n");
             offset += prnt_len;
             line_offset = 0;
         }
 
     }
 
-    prnt_len = sprintf(buf + buf_offset, "%s", &tmpbuf[offset]);
+    size -= buf_offset;
+    prnt_len = snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
     line_offset += prnt_len;
 
     len = fprintf(stream, "%s", buf);
