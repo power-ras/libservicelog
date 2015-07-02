@@ -346,15 +346,14 @@ servicelog_repair_query(servicelog *slog, char *query,
 		}
 
 		if (*repair == NULL) {
-			*repair = malloc(sizeof(struct sl_repair_action));
+			*repair = calloc(1, sizeof(struct sl_repair_action));
 			r = *repair;
 		} else {
-			r->next = malloc(sizeof(struct sl_repair_action));
+			r->next = calloc(1, sizeof(struct sl_repair_action));
 			r = r->next;
 		}
 		if (!r)
 			return 1;
-		memset(r, 0, sizeof(struct sl_repair_action));
 
 		n_cols = sqlite3_column_count(stmt);
 		for (i = 0; i<n_cols; i++) {
