@@ -1630,8 +1630,6 @@ static void v29nfy_ensure_buffer_stack (void)
 		if ( ! (yy_buffer_stack) )
 			YY_FATAL_ERROR( "out of dynamic memory in v29nfy_ensure_buffer_stack()" );
 
-		memset((yy_buffer_stack), 0, num_to_alloc * sizeof(struct yy_buffer_state*));
-
 		(yy_buffer_stack_max) = num_to_alloc;
 		(yy_buffer_stack_top) = 0;
 		return;
@@ -1924,7 +1922,7 @@ static int yy_flex_strlen (yyconst char * s )
 
 void *v29nfy_alloc (yy_size_t  size )
 {
-	return (void *) malloc( size );
+	return (void *) calloc(1, size );
 }
 
 void *v29nfy_realloc  (void * ptr, yy_size_t  size )
