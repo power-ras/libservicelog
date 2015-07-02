@@ -218,17 +218,15 @@ servicelog_notify_query(servicelog *slog, char *query,
 		}
 
 		if (*notify == NULL) {
-			*notify = malloc(sizeof(struct sl_notify));
+			*notify = calloc(1, sizeof(struct sl_notify));
 			n = *notify;
 		} else {
-			n->next = malloc(sizeof(struct sl_notify));
+			n->next = calloc(1, sizeof(struct sl_notify));
 			n = n->next;
 		}
 
 		if (!n)
 			goto free_mem;
-
-		memset(n, 0, sizeof(struct sl_notify));
 
 		n_cols = sqlite3_column_count(stmt);
 		for (i = 0; i<n_cols; i++) {
