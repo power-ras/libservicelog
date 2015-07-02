@@ -183,12 +183,11 @@ retrieve_addl_data_os(void *e, int argc, char **argv, char **column)
 	struct sl_event *event = (struct sl_event *)e;
 	struct sl_data_os *os;
 
-	event->addl_data = malloc(sizeof(struct sl_data_os));
+	event->addl_data = calloc(1, sizeof(struct sl_data_os));
 	if (!event->addl_data)
 		return 1;
 
 	os = (struct sl_data_os *)event->addl_data;
-	memset(os, 0, sizeof(struct sl_data_os));
 
 	for (i=0; i<argc; i++) {
 		if (!strcmp(column[i], "version")) {
@@ -250,12 +249,11 @@ retrieve_addl_data_rtas(void *e, int argc, char **argv, char **column)
 	struct sl_event *event = (struct sl_event *)e;
 	struct sl_data_rtas *rtas;
 
-	event->addl_data = malloc(sizeof(struct sl_data_rtas));
+	event->addl_data = calloc(1, sizeof(struct sl_data_rtas));
 	if (!event->addl_data)
 		return 1;
 
 	rtas = (struct sl_data_rtas *)event->addl_data;
-	memset(rtas, 0, sizeof(struct sl_data_rtas));
 
 	for (i=0; i<argc; i++) {
 		if (!strcmp(column[i], "action_flags")) {
@@ -327,12 +325,11 @@ retrieve_addl_data_enclosure(void *e, int argc, char **argv, char **column)
 	struct sl_event *event = (struct sl_event *)e;
 	struct sl_data_enclosure *encl;
 
-	event->addl_data = malloc(sizeof(struct sl_data_enclosure));
+	event->addl_data = calloc(1, sizeof(struct sl_data_enclosure));
 	if (!event->addl_data)
 		return 1;
 
 	encl = (struct sl_data_enclosure *)event->addl_data;
-	memset(encl, 0, sizeof(struct sl_data_enclosure));
 
 	for (i=0; i<argc; i++) {
 		if (!strcmp(column[i], "enclosure_serial")) {
@@ -378,12 +375,11 @@ retrieve_addl_data_bmc(void *e, int argc, char **argv, char **column)
 	struct sl_event *event = (struct sl_event *)e;
 	struct sl_data_bmc *bmc;
 
-	event->addl_data = malloc(sizeof(struct sl_data_bmc));
+	event->addl_data = calloc(1, sizeof(struct sl_data_bmc));
 	if (!event->addl_data)
 		return 1;
 
 	bmc = (struct sl_data_bmc *)event->addl_data;
-	memset(bmc, 0, sizeof(struct sl_data_bmc));
 
 	for (i=0; i<argc; i++) {
 		if (!strcmp(column[i], "sel_id")) {
