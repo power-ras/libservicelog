@@ -387,20 +387,18 @@ build_callout(void *c, int argc, char **argv, char **column)
 	struct sl_callout **callout_list = (struct sl_callout **)c;
 
 	if (*callout_list == NULL) {
-		*callout_list = malloc(sizeof(struct sl_callout));
+		*callout_list = calloc(1, sizeof(struct sl_callout));
 		callout = *callout_list;
 	} else {
 		callout = *callout_list;
 		while (callout->next != NULL)
 			callout = callout->next;
-		callout->next = malloc(sizeof(struct sl_callout));
+		callout->next = calloc(1, sizeof(struct sl_callout));
 		callout = callout->next;
 	}
 
 	if (!callout)
 		return 1;
-
-	memset(callout, 0, sizeof(struct sl_callout));
 
 	for (i=0; i<argc; i++) {
 		if (!strcmp(column[i], "priority"))
@@ -521,16 +519,15 @@ servicelog_event_query(servicelog *slog, char *query,
 		}
 
 		if (*event == NULL) {
-			*event = malloc(sizeof(struct sl_event));
+			*event = calloc(1, sizeof(struct sl_event));
 			e = *event;
 		} else {
-			e->next = malloc(sizeof(struct sl_event));
+			e->next = calloc(1, sizeof(struct sl_event));
 			e = e->next;
 		}
 
 		if (!e)
 			return 1;
-		memset(e, 0, sizeof(struct sl_event));
 
 		n_cols = sqlite3_column_count(stmt);
 		for (i = 0; i<n_cols; i++) {
