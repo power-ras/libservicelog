@@ -633,6 +633,7 @@ int
 servicelog_truncate(servicelog *slog, int notifications_too)
 {
 	int rc;
+	char *err = NULL;
 
 	if (slog == NULL)
 		return EINVAL;
@@ -643,26 +644,25 @@ servicelog_truncate(servicelog *slog, int notifications_too)
 		return EACCES;
 	}
 
-	rc = sqlite3_exec(slog->db, "DELETE FROM events",
-			  NULL, NULL, NULL);
-	rc = sqlite3_exec(slog->db, "DELETE FROM callouts",
-			  NULL, NULL, NULL);
-	rc = sqlite3_exec(slog->db, "DELETE FROM os",
-			  NULL, NULL, NULL);
-	rc = sqlite3_exec(slog->db, "DELETE FROM rtas",
-			  NULL, NULL, NULL);
-	rc = sqlite3_exec(slog->db, "DELETE FROM enclosure",
-			  NULL, NULL, NULL);
-	rc = sqlite3_exec(slog->db, "DELETE FROM bmc",
-			  NULL, NULL, NULL);
-	rc = sqlite3_exec(slog->db, "DELETE FROM repair_actions",
-			  NULL, NULL, NULL);
+	rc = sqlite3_exec(slog->db, "DELETE FROM events", NULL, NULL, &err);
+	rc = rc ? rc : sqlite3_exec(slog->db, "DELETE FROM callouts", NULL, NULL, &err);
+	rc = rc ? rc : sqlite3_exec(slog->db, "DELETE FROM os", NULL, NULL, &err);
+	rc = rc ? rc : sqlite3_exec(slog->db, "DELETE FROM rtas", NULL, NULL, &err);
+	rc = rc ? rc : sqlite3_exec(slog->db, "DELETE FROM enclosure", NULL, NULL, &err);
+	rc = rc ? rc : sqlite3_exec(slog->db, "DELETE FROM bmc", NULL, NULL, &err);
+	rc = rc ? rc : sqlite3_exec(slog->db, "DELETE FROM repair_actions",
+							NULL, NULL, &err);
 
-	if (notifications_too)
+	if ((rc == SQLITE_OK) && notifications_too) {
 		rc = sqlite3_exec(slog->db, "DELETE FROM notifications",
-				  NULL, NULL, NULL);
+				  NULL, NULL, &err);
+	}
 
-	return 0;
+	if (rc != SQLITE_OK)
+		snprintf(slog->error, SL_MAX_ERR, "Error: %s", err);
+
+	sqlite3_free(err);
+	return rc;
 }
 
 /**
