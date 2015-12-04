@@ -638,7 +638,7 @@ servicelog_truncate(servicelog *slog, int notifications_too)
 	if (slog == NULL)
 		return EINVAL;
 
-	if ((slog->flags && SL_FLAG_ADMIN) == 0) {
+	if ((slog->flags & SL_FLAG_ADMIN) == 0) {
 		snprintf(slog->error, SL_MAX_ERR, "The database must be "
 			 "opened with the ADMIN flag");
 		return EACCES;
