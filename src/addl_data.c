@@ -227,7 +227,7 @@ free_mem:
 	if (os->device)
 		free(os->device);
 
-	if (event->addl_data);
+	if (event->addl_data)
 		free(event->addl_data);
 
 	return 1;
