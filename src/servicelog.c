@@ -350,8 +350,10 @@ get_system_info(char *var, char *buf, size_t sz)
 	if (fd == NULL)
 		return 0;
 
-	if (n_junk_chars > 0)
-		fread(junk_chars, n_junk_chars, 1, fd);
+	if (fseek(fd, n_junk_chars, SEEK_SET)) {
+		fclose(fd);
+		return 0;
+	}
 
 	n_read = fread(buf, sz, 1, fd);
 	fclose(fd);
