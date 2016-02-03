@@ -430,30 +430,6 @@ replace_query_keywords(servicelog *slog, char *query, sqlite3_stmt **stmt,
 }
 
 /**
- * format_text_to_insert
- * @brief Replace one ' (apostrophe) with two to make a legal SQL string.
- *
- * @param[in] input input string
- * @param[out] output legal SQL string
- * @param[in] size size of the output buffer
- */
-void
-format_text_to_insert(char *input, char *output, int size)
-{
-	char *end = output + size - 1; /* Leave room for trailing NULL. */
-
-	while (*input && output < end) {
-		if (*input == '\'') {
-			if (output + 2 > end)
-				break; /* Lack room for 2 apostrophes. */
-			*output++ = '\'';
-		}
-		*output++ = *input++;
-	}
-	*output = '\0';
-}
-
-/**
  * servicelog_init
  * @brief Populate the database with tables and triggers.
  *

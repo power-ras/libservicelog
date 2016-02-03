@@ -99,7 +99,6 @@ servicelog_notify_log(servicelog *slog, struct sl_notify *notify,
 {
 	const char *out;
 	int rc;
-	char command[DESC_MAXLEN];
 	sqlite3_stmt *pstmt = NULL;
 
 	/* Input validation begins here */
@@ -138,9 +137,6 @@ servicelog_notify_log(servicelog *slog, struct sl_notify *notify,
 
 	/* Input data looks valid at this point */
 
-	/* update the "notifications" table */
-	format_text_to_insert(notify->command, command, DESC_MAXLEN);
-
 	rc = sqlite3_prepare(slog->db, "INSERT INTO notifications (notify,"
 			     " command, method, match) VALUES (?, ?, ?, ?);",
 			     -1, &pstmt, &out);
@@ -151,8 +147,8 @@ servicelog_notify_log(servicelog *slog, struct sl_notify *notify,
 	}
 
 	rc = sqlite3_bind_int(pstmt, 1,	notify->notify);
-	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, command,
-					 strlen(command), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, notify->command,
+					 strlen(notify->command), SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, notify->method);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, notify->match,
 					 strlen(notify->match), SQLITE_STATIC);
@@ -295,7 +291,6 @@ servicelog_notify_update(servicelog *slog, uint64_t notify_id,
 {
 	int rc;
 	const char *out;
-	char command[DESC_MAXLEN];
 	sqlite3_stmt *pstmt = NULL;
 
 	/* Input validation begins here */
@@ -335,9 +330,6 @@ servicelog_notify_update(servicelog *slog, uint64_t notify_id,
 
 	/* Input data looks valid at this point */
 
-	/* update the "notifications" table */
-	format_text_to_insert(notify->command, command, DESC_MAXLEN);
-
 	rc = sqlite3_prepare(slog->db, "UPDATE notifications SET notify=?, "
 			     "command=?, method=?, match=?) WHERE id=?",
 			     -1, &pstmt, &out);
@@ -348,8 +340,8 @@ servicelog_notify_update(servicelog *slog, uint64_t notify_id,
 	}
 
 	rc = sqlite3_bind_int(pstmt, 1, notify->notify);
-	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, command,
-					 strlen(command), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, notify->command,
+					 strlen(notify->command), SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, notify->method);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, notify->match,
 					 strlen(notify->match), SQLITE_STATIC);

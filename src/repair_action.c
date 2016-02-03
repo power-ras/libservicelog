@@ -122,7 +122,6 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	uint64_t ra_id = 0;
 	char timebuf[32];
 	char serialbuf[20] = {0,}, modelbuf[20] = {0,};
-	char notes[DESC_MAXLEN];
 	struct tm *t;
 	struct utsname uname_buf;
 	struct sl_event *event, *e;
@@ -183,10 +182,6 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 		return SQLITE_PERM;
 	}
 
-	notes[0] = '\0';
-	if (repair->notes != NULL)
-		format_text_to_insert(repair->notes, notes, DESC_MAXLEN);
-
 	rc = sqlite3_prepare(slog->db, "INSERT INTO repair_actions"
 		" (time_repair, procedure, location, platform,"
 		" machine_serial, machine_model, notes) VALUES (?, ?, ?,"
@@ -208,8 +203,8 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 					 strlen(serialbuf), SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 6, modelbuf,
 					 strlen(modelbuf), SQLITE_STATIC);
-	rc = rc ? rc : sqlite3_bind_text(pstmt, 7, notes,
-					 strlen(notes), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 7, repair->notes,
+					 strlen(repair->notes), SQLITE_STATIC);
 	if (rc != SQLITE_OK)
 		goto sqlt_fail;
 

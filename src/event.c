@@ -139,7 +139,6 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 	char timebuf[32];
 	const char *out;
 	char serialbuf[20] = {0,} , modelbuf[20] = {0,};
-	char description[DESC_MAXLEN];
 	struct tm *t;
 	struct sl_callout *callout;
 	struct utsname uname_buf;
@@ -268,10 +267,6 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 			return 2;
 		}
 
-		/* update the "events" table */
-		format_text_to_insert(event->description, description,
-								DESC_MAXLEN);
-
 		rc = sqlite3_prepare(slog->db, "INSERT INTO events"
 				" (time_event, type, severity, platform,"
 				" machine_serial, machine_model, nodename,"
@@ -300,8 +295,9 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 						 strlen(uname_buf.nodename), SQLITE_STATIC);
 		rc = rc ? rc : sqlite3_bind_text(pstmt, 8, event->refcode,
 						 strlen(event->refcode), SQLITE_STATIC);
-		rc = rc ? rc : sqlite3_bind_text(pstmt, 9, description,
-						 strlen(description), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_text(pstmt, 9, event->description,
+						 strlen(event->description),
+						 SQLITE_STATIC);
 		rc = rc ? rc : sqlite3_bind_int(pstmt, 10, event->serviceable);
 		rc = rc ? rc : sqlite3_bind_int(pstmt, 11, event->predictive);
 		rc = rc ? rc : sqlite3_bind_int(pstmt, 12, event->disposition);

@@ -63,7 +63,6 @@ int sl_printf(FILE *stream, char *fmt, ...);
 size_t get_system_info(char *var, char *buf, size_t sz);
 int replace_query_keywords(servicelog *slog, char *query, sqlite3_stmt **stmt,
 			   char *err, size_t err_sz);
-void format_text_to_insert(char *input, char *output, int size);
 
 void sqlite_blob_functions();
 
