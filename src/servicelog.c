@@ -244,7 +244,7 @@ sl_printf(FILE *stream, char *fmt, ...)
 	int tmpbuf_len, width = 0, prnt_len;
 	char buf[1024], tmpbuf[1024];
 	char *newline = NULL, *brkpt = NULL;
-	int size = (*buf + sizeof(buf) - 1);
+	int size = sizeof(buf) - 1;
 
 	memset(tmpbuf, 0, sizeof(tmpbuf));
 	memset(buf, 0, sizeof(buf));
@@ -283,7 +283,7 @@ sl_printf(FILE *stream, char *fmt, ...)
 				snprintf(buf + buf_offset, size,
 					 "%s", &tmpbuf[offset]);
 				buf_offset = strlen(buf);
-				buf[*buf + buf_offset] = "\n";
+				buf[*buf + buf_offset] = '\n';
 				buf_offset += 1;
 				offset += prnt_len;
 				line_offset = 0;
@@ -303,7 +303,7 @@ sl_printf(FILE *stream, char *fmt, ...)
 			size -= buf_offset;
 			snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
 			buf_offset = strlen(buf);
-			buf[*buf + buf_offset] = "\n";
+			buf[*buf + buf_offset] = '\n';
 			buf_offset += 1;
 			offset += prnt_len;
 			line_offset = 0;
