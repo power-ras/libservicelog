@@ -781,7 +781,6 @@ convert_v29_query_to_v1(struct sl_query *v29_query, char **v1_where)
 	if (v29_query->severity > 1) {
 		next += snprintf(next, (end - next), "%sseverity >= %d",
 			connector, v29_query->severity);
-		connector = and_connector;
 	}
 
 	*v1_where = strdup(tmp);
