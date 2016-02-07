@@ -37,16 +37,18 @@ static void
 add_to_list(servicelog *slog, struct sl_event **events, uint64_t id)
 {
 	struct sl_event *event, *e;
+	int rc;
 
-	servicelog_event_get(slog, id, &event);
-
-	if (*events == NULL)
-		*events = event;
-	else {
-		e = *events;
-		while (e->next)
-			e = e->next;
-		e->next = event;
+	rc = servicelog_event_get(slog, id, &event);
+	if ((rc == 0) && (event != NULL)) {
+		if (*events == NULL)
+			*events = event;
+		else {
+			e = *events;
+			while (e->next)
+				e = e->next;
+			e->next = event;
+		}
 	}
 }
 

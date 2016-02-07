@@ -652,22 +652,24 @@ check_notify(void *d, int argc, char **argv, char **column)
 								data->id);
 
 	if (data->notify == SL_NOTIFY_EVENTS) {
-		servicelog_event_query(data->slog, query, &events);
+		rc = servicelog_event_query(data->slog, query, &events);
 
-		if (events != NULL)
+		if ((rc == 0) && (events != NULL))
 			run_notification_tool(&notify, SL_NOTIFY_EVENTS,
 					      events);
 
 		servicelog_event_free(events);
+		goto free_mem;
 	}
 	else if (data->notify == SL_NOTIFY_REPAIRS) {
-		servicelog_repair_query(data->slog, query, &repairs);
+		rc = servicelog_repair_query(data->slog, query, &repairs);
 
-		if (repairs != NULL)
+		if ((rc == 0) && (repairs != NULL))
 			run_notification_tool(&notify, SL_NOTIFY_REPAIRS,
 					      repairs);
 
 		servicelog_repair_free(repairs);
+		goto free_mem;
 	}
 
 	/* Return successful */
