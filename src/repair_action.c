@@ -341,8 +341,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 		if (rc != SQLITE_ROW) {
 			snprintf(slog->error, SL_MAX_ERR, "Query error (%d): "
 				 "%s", rc, sqlite3_errmsg(slog->db));
-			sqlite3_finalize(stmt);
-			return 1;
+			goto free_mem;
 		}
 
 		if (*repair == NULL) {
@@ -353,7 +352,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 			r = r->next;
 		}
 		if (!r)
-			return 1;
+			goto free_mem;
 
 		n_cols = sqlite3_column_count(stmt);
 		for (i = 0; i<n_cols; i++) {
@@ -415,26 +414,9 @@ servicelog_repair_query(servicelog *slog, char *query,
 	return 0;
 
 free_mem:
-	if (r->procedure)
-		free(r->procedure);
-
-	if (r->location)
-		free(r->location);
-
-	if (r->platform)
-		free(r->platform);
-
-	if (r->machine_serial)
-		free(r->machine_serial);
-
-	if (r->machine_model)
-		free(r->machine_model);
-
-	if (r->notes)
-		free(r->notes);
-
-	free(r);
-
+	servicelog_repair_free(*repair);
+	*repair = NULL;
+	sqlite3_finalize(stmt);
 	return 1;
 }
 

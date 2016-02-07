@@ -514,8 +514,7 @@ servicelog_event_query(servicelog *slog, char *query,
 		if (rc != SQLITE_ROW) {
 			snprintf(slog->error, SL_MAX_ERR, "Query error (%d): "
 				 "%s", rc, sqlite3_errmsg(slog->db));
-			sqlite3_finalize(stmt);
-			return 1;
+			goto free_mem;
 		}
 
 		if (*event == NULL) {
@@ -527,7 +526,7 @@ servicelog_event_query(servicelog *slog, char *query,
 		}
 
 		if (!e)
-			return 1;
+			goto free_mem;
 
 		n_cols = sqlite3_column_count(stmt);
 		for (i = 0; i<n_cols; i++) {
@@ -648,6 +647,8 @@ servicelog_event_query(servicelog *slog, char *query,
 				snprintf(slog->error, SL_MAX_ERR,
 					 "Query error (%d): %s", rc, err);
 				sqlite3_free(err);
+				servicelog_event_free(*event);
+				*event = NULL;
 				return 1;
 			}
 		}
@@ -658,29 +659,9 @@ servicelog_event_query(servicelog *slog, char *query,
 	return 0;
 
 free_mem:
-	if (e->platform)
-		free(e->platform);
-
-	if (e->machine_serial)
-		free(e->machine_serial);
-
-	if (e->machine_model)
-		free(e->machine_model);
-
-	if (e->nodename)
-		free(e->nodename);
-
-	if (e->refcode)
-		free(e->refcode);
-
-	if (e->description)
-		free(e->description);
-
-	if (e->raw_data)
-		free(e->raw_data);
-
-	free(e);
-
+	sqlite3_finalize(stmt);
+	servicelog_event_free(*event);
+	*event = NULL;
 	return 1;
 }
 

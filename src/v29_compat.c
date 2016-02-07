@@ -877,6 +877,7 @@ query_repair_events(servicelog *log, struct sl_query *v29_query,
 	v1_repairs = NULL;
 	result = servicelog_repair_query(log, v1_match, &v1_repairs);
 	if (result != 0) {
+		servicelog_repair_free(v1_repairs);
 		/* servicelog_repair_query() set log->error. */
 		return result;
 	}
