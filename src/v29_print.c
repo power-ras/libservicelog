@@ -115,7 +115,7 @@ sl_printf(FILE *stream, char *fmt, ...)
     int         prnt_len;
     char        *newline = NULL;
     char        *brkpt = NULL;
-    int         size = (*buf + sizeof(buf) - 1);
+    int		size = sizeof(buf) - 1;
 
     memset(tmpbuf, 0, sizeof(tmpbuf));
     memset(buf, 0, sizeof(buf));
