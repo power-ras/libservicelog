@@ -53,9 +53,11 @@ int
 insert_addl_data_os(servicelog *slog, struct sl_event *event)
 {
 	int rc;
-	char buf[1024], *version;
+	char *version;
+	const char *out;
 	struct sl_data_os *os;
 	struct utsname uname_buf;
+	sqlite3_stmt *pstmt = NULL;
 
 	os = (struct sl_data_os *)event->addl_data;
 
@@ -66,14 +68,37 @@ insert_addl_data_os(servicelog *slog, struct sl_event *event)
 	else
 		version = os->version;
 
-	snprintf(buf, 1024, "INSERT OR REPLACE INTO os (event_id, version, subsystem, "
-		 "driver, device) VALUES (""%" PRIu64 ", '%s', '%s', '%s', '%s');",
-		 event->id, version, os->subsystem, os->driver, os->device);
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, NULL);
+	rc = sqlite3_prepare(slog->db, "INSERT OR REPLACE INTO os (event_id,"
+		" version, subsystem, driver, device) VALUES (?, ?, ?, ?, ?);",
+		 -1, &pstmt, &out);
 	if (rc != SQLITE_OK)
 		return rc;
 
-	return SQLITE_OK;
+	rc = sqlite3_bind_int64(pstmt, 1, event->id);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, version,
+					 strlen(version), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 3, os->subsystem,
+					 strlen(os->subsystem), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, os->driver,
+					 strlen(os->driver), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 5, os->device,
+					 strlen(os->device), SQLITE_STATIC);
+
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return rc;
 }
 
 /**
@@ -86,29 +111,57 @@ insert_addl_data_os(servicelog *slog, struct sl_event *event)
 int
 insert_addl_data_rtas(servicelog *slog, struct sl_event *event)
 {
+	const char *out;
 	int rc;
-	char buf[1024];
 	struct sl_data_rtas *rtas;
+	sqlite3_stmt *pstmt = NULL;
 
 	rtas = (struct sl_data_rtas *)event->addl_data;
 
-	snprintf(buf, 1024, "INSERT OR REPLACE INTO rtas (event_id, action_flags, "
-		 "platform_id, creator_id, subsystem_id, pel_severity, "
-		 "event_type, event_subtype, kernel_id, addl_word1, "
-		 "addl_word2, addl_word3, addl_word4, addl_word5, addl_word6, "
-		 "addl_word7, addl_word8) VALUES (""%" PRIu64 ", %u, %u, '%c', %u, %u, "
-		 "%u, %u, %u, %u, %u, %u, %u, %u, %u, %u,%u);", event->id,
-		 rtas->action_flags, rtas->platform_id, rtas->creator_id,
-		 rtas->subsystem_id, rtas->pel_severity, rtas->event_type,
-		 rtas->event_subtype, rtas->kernel_id, rtas->addl_words[0],
-		 rtas->addl_words[1], rtas->addl_words[2], rtas->addl_words[3],
-		 rtas->addl_words[4], rtas->addl_words[5], rtas->addl_words[6],
-		 rtas->addl_words[7]);
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, NULL);
+	rc = sqlite3_prepare(slog->db, "INSERT OR REPLACE INTO rtas ("
+		"event_id, action_flags, platform_id, creator_id,"
+		" subsystem_id, pel_severity, event_type, event_subtype,"
+		" kernel_id, addl_word1, addl_word2, addl_word3, addl_word4,"
+		" addl_word5, addl_word6, addl_word7, addl_word8) VALUES (?,"
+		" ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+		-1, &pstmt, &out);
 	if (rc != SQLITE_OK)
 		return rc;
 
-	return SQLITE_OK;
+	rc = sqlite3_bind_int64(pstmt, 1, event->id);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 2, rtas->action_flags);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, rtas->platform_id);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, &(rtas->creator_id),
+					 1, SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 5, rtas->subsystem_id);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 6, rtas->pel_severity);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 7, rtas->event_type);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 8, rtas->event_subtype);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 9, rtas->kernel_id);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 10, rtas->addl_words[0]);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 11, rtas->addl_words[1]);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 12, rtas->addl_words[2]);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 13, rtas->addl_words[3]);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 14, rtas->addl_words[4]);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 15, rtas->addl_words[5]);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 16, rtas->addl_words[6]);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 17, rtas->addl_words[7]);
+
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return rc;
 }
 
 /**
@@ -121,20 +174,43 @@ insert_addl_data_rtas(servicelog *slog, struct sl_event *event)
 int
 insert_addl_data_enclosure(servicelog *slog, struct sl_event *event)
 {
+	const char *out;
 	int rc;
-	char buf[1024];
+	sqlite3_stmt *pstmt = NULL;
 	struct sl_data_enclosure *encl;
 
 	encl = (struct sl_data_enclosure *)event->addl_data;
 
-	snprintf(buf, 1024, "INSERT OR REPLACE INTO enclosure (event_id, enclosure_model, "
-		 "enclosure_serial) VALUES (""%" PRIu64 ", '%s', '%s');", event->id,
-		 encl->enclosure_model, encl->enclosure_serial);
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, NULL);
-	if (rc != SQLITE_OK)
+	rc = sqlite3_prepare(slog->db, "INSERT OR REPLACE INTO enclosure"
+		" (event_id, enclosure_model, enclosure_serial) VALUES (?,"
+		" ?, ?);", -1, &pstmt, &out);
+	if (rc != SQLITE_OK) {
+		snprintf(slog->error, SL_MAX_ERR, "%s",
+				sqlite3_errmsg(slog->db));
 		return rc;
+	}
 
-	return SQLITE_OK;
+	rc = sqlite3_bind_int64(pstmt, 1, event->id);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, encl->enclosure_model,
+					 strlen(encl->enclosure_model), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 3, encl->enclosure_serial,
+					 strlen(encl->enclosure_serial), SQLITE_STATIC);
+
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return rc;
 }
 
 /**
@@ -147,24 +223,49 @@ insert_addl_data_enclosure(servicelog *slog, struct sl_event *event)
 int
 insert_addl_data_bmc(servicelog *slog, struct sl_event *event)
 {
+	const char *out;
 	int rc;
-	char buf[1024];
 	struct sl_data_bmc *bmc;
+	sqlite3_stmt *pstmt = NULL;
 
 	bmc = (struct sl_data_bmc *)event->addl_data;
 
-	snprintf(buf, 1024, "INSERT OR REPLACE INTO bmc (event_id, sel_id, sel_type, "
-		 "generator, version, sensor_type, sensor_number, event_class, "
-		 "event_type, direction) VALUES (""%" PRIu64 ", %u, %u, %u, %u, %u, %u, "
-		 "%u, %u, %d);", event->id, bmc->sel_id, bmc->sel_type,
-		 bmc->generator, bmc->version, bmc->sensor_type,
-		 bmc->sensor_number, bmc->event_class, bmc->event_type,
-		 bmc->direction);
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, NULL);
-	if (rc != SQLITE_OK)
+	rc = sqlite3_prepare(slog->db, "INSERT OR REPLACE INTO bmc (event_id,"
+		" sel_id, sel_type, generator, version, sensor_type,"
+		" sensor_number, event_class, event_type, direction) VALUES"
+		" (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", -1, &pstmt, &out);
+	if (rc != SQLITE_OK) {
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
 		return rc;
+	}
 
-	return SQLITE_OK;
+	rc = sqlite3_bind_int64(pstmt, 1, event->id);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 2, bmc->sel_id);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, bmc->sel_type);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 4, bmc->generator);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 5, bmc->version);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 6, bmc->sensor_type);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 7, bmc->sensor_number);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 8, bmc->event_class);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 9, bmc->event_type);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 10, bmc->direction);
+
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return SQLITE_INTERNAL;
 }
 
 /**

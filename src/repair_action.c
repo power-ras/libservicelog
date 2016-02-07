@@ -118,15 +118,16 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 		      uint64_t *new_id, struct sl_event **events)
 {
 	int rc;
+	const char *out;
 	uint64_t ra_id = 0;
-	char *err;
-	char buf[SQL_MAXLEN], timebuf[32];
+	char timebuf[32];
 	char serialbuf[20] = {0,}, modelbuf[20] = {0,};
 	char notes[DESC_MAXLEN];
 	struct tm *t;
 	struct utsname uname_buf;
 	struct sl_event *event, *e;
 	struct sl_callout *c;
+	sqlite3_stmt *pstmt = NULL;
 	int testing;
 	char *testing_env_var;
 
@@ -136,11 +137,11 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	/* Input validation begins here */
 
 	if (slog == NULL)
-		return 1;
+		return SQLITE_ERROR;
 
 	if (repair == NULL) {
 		snprintf(slog->error, SL_MAX_ERR, "Invalid parameter(s)");
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/*
@@ -150,7 +151,7 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	if (repair->procedure == NULL || repair->location == NULL) {
 		snprintf(slog->error, SL_MAX_ERR,
 			 "The procedure and location fields must be specified");
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* Input data looks valid at this point */
@@ -179,27 +180,44 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	if (rc != 0) {
 		snprintf(slog->error, SL_MAX_ERR, "Could not retrieve "
 			 "system information");
-		return 3;
+		return SQLITE_PERM;
 	}
 
 	notes[0] = '\0';
 	if (repair->notes != NULL)
 		format_text_to_insert(repair->notes, notes, DESC_MAXLEN);
 
-	/* update the "repair_actions" table */
-	snprintf(buf, SQL_MAXLEN, "INSERT INTO repair_actions (time_repair, "
-		 "procedure, location, platform, machine_serial, "
-		 "machine_model, notes) VALUES ('%s', '%s', '%s', '%s', '%s', "
-		 "'%s', '%s');", timebuf, repair->procedure, repair->location,
-		 uname_buf.machine, serialbuf, modelbuf, notes);
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+	rc = sqlite3_prepare(slog->db, "INSERT INTO repair_actions"
+		" (time_repair, procedure, location, platform,"
+		" machine_serial, machine_model, notes) VALUES (?, ?, ?,"
+		" ?, ?, ?, ?);", -1, &pstmt, &out);
 	if (rc != SQLITE_OK) {
-		snprintf(slog->error, SL_MAX_ERR, "INSERT error (%d): %s",
-			 rc, err);
-		sqlite3_free(err);
-		return 2;
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
+		return SQLITE_INTERNAL;
 	}
-	sqlite3_free(err);
+	rc = sqlite3_bind_text(pstmt, 1, timebuf,
+			       strlen(timebuf), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, repair->procedure,
+					 strlen(repair->procedure), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 3, repair->location,
+					 strlen(repair->location), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, uname_buf.machine,
+					 strlen(uname_buf.machine), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 5, serialbuf,
+					 strlen(serialbuf), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 6, modelbuf,
+					 strlen(modelbuf), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 7, notes,
+					 strlen(notes), SQLITE_STATIC);
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
 
 	ra_id = (uint64_t)sqlite3_last_insert_rowid(slog->db);
 	repair->id = ra_id;
@@ -281,10 +299,15 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 
 	rc = notify_repair(slog, ra_id);
 	if (rc != 0)
-		return 4;
+		return SQLITE_ABORT;
 
 	return 0;
 
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return rc;
 }
 
 int
@@ -425,25 +448,37 @@ free_mem:
 int
 servicelog_repair_delete(servicelog *slog, uint64_t repair_id)
 {
+	const char *out;
 	int rc;
-	char buf[80], *err;
+	sqlite3_stmt *pstmt = NULL;
 
 	if (slog == NULL)
-		return 1;
+		return SQLITE_ERROR;
 
-	snprintf(buf, 80, "DELETE FROM repair_actions WHERE id=""%" PRIu64,
-		 repair_id);
-
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+	rc = sqlite3_prepare(slog->db, "DELETE FROM repair_actions WHERE id=?",
+			     -1, &pstmt, &out);
 	if (rc != SQLITE_OK) {
-		snprintf(slog->error, SL_MAX_ERR, "DELETE error (%d): %s",
-			 rc, err);
-		sqlite3_free(err);
-		return 2;
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
+		return SQLITE_INTERNAL;
 	}
-	sqlite3_free(err);
 
-	return 0;
+	rc = sqlite3_bind_int64(pstmt, 1, repair_id);
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return SQLITE_INTERNAL;
 }
 
 /**

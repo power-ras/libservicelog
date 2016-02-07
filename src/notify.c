@@ -97,13 +97,14 @@ int
 servicelog_notify_log(servicelog *slog, struct sl_notify *notify,
 		      uint64_t *new_id)
 {
+	const char *out;
 	int rc;
-	char *err, buf[SQL_MAXLEN], command[DESC_MAXLEN];
+	char command[DESC_MAXLEN];
+	sqlite3_stmt *pstmt = NULL;
 
 	/* Input validation begins here */
-
 	if (slog == NULL)
-		return 1;
+		return SQLITE_ERROR;
 	if (notify == NULL) {
 		snprintf(slog->error, SL_MAX_ERR,
 			 "Invalid parameter(s) to servicelog_notify_add()");
@@ -114,48 +115,64 @@ servicelog_notify_log(servicelog *slog, struct sl_notify *notify,
 	if ((notify->command == NULL) || (strlen(notify->command) == 0)) {
 		snprintf(slog->error, SL_MAX_ERR,
 			 "The command field must be specified");
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* notify should be within the range */
 	if ((notify->notify > SL_NOTIFY_MAX) || (notify->notify < 0)) {
 		snprintf(slog->error, SL_MAX_ERR, "An invalid value appeared "
 			 "in the notify field (%d)", notify->notify);
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* method should be within the range */
 	if ((notify->method > SL_METHOD_MAX) || (notify->method < 0)) {
 		snprintf(slog->error, SL_MAX_ERR, "An invalid value appeared "
 			 "in the method field (%d)", notify->method);
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* validate that the match string is a valid SQL WHERE clause */
 	if (validate_notify_match(slog, notify) != 0)
-		return 1;
+		return SQLITE_ERROR;
 
 	/* Input data looks valid at this point */
 
 	/* update the "notifications" table */
 	format_text_to_insert(notify->command, command, DESC_MAXLEN);
 
-	snprintf(buf, SQL_MAXLEN, "INSERT INTO notifications (notify, command, "
-		 "method, match) VALUES (%d, '%s', %d, '%s');", notify->notify,
-		 command, notify->method, notify->match);
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+	rc = sqlite3_prepare(slog->db, "INSERT INTO notifications (notify,"
+			     " command, method, match) VALUES (?, ?, ?, ?);",
+			     -1, &pstmt, &out);
 	if (rc != SQLITE_OK) {
-		snprintf(slog->error, SL_MAX_ERR, "INSERT error (%d): %s",
-			 rc, err);
-		sqlite3_free(err);
-		return 2;
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
+		return SQLITE_INTERNAL;
 	}
-	sqlite3_free(err);
 
+	rc = sqlite3_bind_int(pstmt, 1,	notify->notify);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, command,
+					 strlen(command), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, notify->method);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, notify->match,
+					 strlen(notify->match), SQLITE_STATIC);
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
 	*new_id = (uint64_t)sqlite3_last_insert_rowid(slog->db);
 	notify->id = *new_id;
+	return rc;
 
-	return 0;
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return SQLITE_INTERNAL;
 }
 
 int
@@ -277,7 +294,9 @@ servicelog_notify_update(servicelog *slog, uint64_t notify_id,
 			 struct sl_notify *notify)
 {
 	int rc;
-	char *err, buf[SQL_MAXLEN], command[DESC_MAXLEN];
+	const char *out;
+	char command[DESC_MAXLEN];
+	sqlite3_stmt *pstmt = NULL;
 
 	/* Input validation begins here */
 
@@ -286,79 +305,107 @@ servicelog_notify_update(servicelog *slog, uint64_t notify_id,
 	if (notify == NULL) {
 		snprintf(slog->error, SL_MAX_ERR,
 			 "Invalid parameter(s) to servicelog_notify_add()");
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* command should always be specified */
 	if ((notify->command == NULL) || (strlen(notify->command) == 0)) {
 		snprintf(slog->error, SL_MAX_ERR,
 			 "The command field must be specified");
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* notify should be within the range */
 	if ((notify->notify > SL_NOTIFY_MAX) || (notify->notify < 0)) {
 		snprintf(slog->error, SL_MAX_ERR, "An invalid value appeared "
 			 "in the notify field (%d)", notify->notify);
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* method should be within the range */
 	if ((notify->method > SL_METHOD_MAX) || (notify->method < 0)) {
 		snprintf(slog->error, SL_MAX_ERR, "An invalid value appeared "
 			 "in the method field (%d)", notify->method);
-		return 1;
+		return SQLITE_ERROR;
 	}
 
 	/* validate that the match string is a valid SQL WHERE clause */
 	if (validate_notify_match(slog, notify) != 0)
-		return 1;
+		return SQLITE_ERROR;
 
 	/* Input data looks valid at this point */
 
 	/* update the "notifications" table */
 	format_text_to_insert(notify->command, command, DESC_MAXLEN);
 
-	snprintf(buf, SQL_MAXLEN, "UPDATE notifications SET notify=%d, "
-		 "command='%s', method=%d, match='%s') WHERE id=""%" PRIu64,
-		 notify->notify, command, notify->method,
-		 notify->match, notify_id);
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+	rc = sqlite3_prepare(slog->db, "UPDATE notifications SET notify=?, "
+			     "command=?, method=?, match=?) WHERE id=?",
+			     -1, &pstmt, &out);
 	if (rc != SQLITE_OK) {
-		snprintf(slog->error, SL_MAX_ERR, "INSERT error (%d): %s",
-			 rc, err);
-		sqlite3_free(err);
-		return 2;
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
+		return SQLITE_INTERNAL;
 	}
-	sqlite3_free(err);
 
+	rc = sqlite3_bind_int(pstmt, 1, notify->notify);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, command,
+					 strlen(command), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, notify->method);
+	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, notify->match,
+					 strlen(notify->match), SQLITE_STATIC);
+	rc = rc ? rc : sqlite3_bind_int64(pstmt, 5, notify_id);
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
 	notify->id = notify_id;
+	return rc;
 
-	return 0;
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return SQLITE_INTERNAL;
 }
 
 int
 servicelog_notify_delete(servicelog *slog, uint64_t notify_id)
 {
+	const char *out;
 	int rc;
-	char buf[80], *err;
+	sqlite3_stmt *pstmt = NULL;
 
 	if (slog == NULL)
-		return 1;
+		return SQLITE_ERROR;
 
-	snprintf(buf, 80, "DELETE FROM notifications WHERE id=""%" PRIu64,
-		 notify_id);
-
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+	rc = sqlite3_prepare(slog->db, "DELETE FROM notifications WHERE id=?",
+			     -1, &pstmt, &out);
 	if (rc != SQLITE_OK) {
-		snprintf(slog->error, SL_MAX_ERR, "DELETE error (%d): %s",
-			 rc, err);
-		sqlite3_free(err);
-		return 2;
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
+		return SQLITE_INTERNAL;
 	}
-	sqlite3_free(err);
 
-	return 0;
+	rc = sqlite3_bind_int64(pstmt, 1, notify_id);
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return SQLITE_INTERNAL;
 }
 
 /**

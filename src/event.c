@@ -136,12 +136,14 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 	int rc, attempts = 0, n_callouts = 0;
 	uint64_t event_id = 0;
 	char *err;
-	char buf[SQL_MAXLEN], timebuf[32];
+	char timebuf[32];
+	const char *out;
 	char serialbuf[20] = {0,} , modelbuf[20] = {0,};
 	char description[DESC_MAXLEN];
 	struct tm *t;
 	struct sl_callout *callout;
 	struct utsname uname_buf;
+	sqlite3_stmt *pstmt = NULL;
 
 	if (new_id != NULL)
 		*new_id = 0;
@@ -270,25 +272,59 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 		format_text_to_insert(event->description, description,
 								DESC_MAXLEN);
 
-		snprintf(buf, SQL_MAXLEN, "INSERT INTO events (time_event, type, "
-			 "severity, platform, machine_serial, machine_model, "
-			 "nodename, refcode, description, serviceable, "
-			 "predictive, disposition, call_home_status, closed, "
-			 "repair, callouts) VALUES ('%s', %d, %d, '%s', '%s', "
-			 "'%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, 0, %d);",
-			 timebuf, event->type, event->severity,
-			 uname_buf.machine, serialbuf, modelbuf,
-			 uname_buf.nodename, event->refcode,
-			 description, event->serviceable,
-			 event->predictive, event->disposition,
-			 event->call_home_status, event->closed, n_callouts);
-		rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+		rc = sqlite3_prepare(slog->db, "INSERT INTO events"
+				" (time_event, type, severity, platform,"
+				" machine_serial, machine_model, nodename,"
+				" refcode, description, serviceable,"
+				" predictive, disposition, call_home_status,"
+				" closed, repair, callouts) VALUES (?, ?, ?,"
+				" ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?);",
+				-1, &pstmt, &out);
 		if (rc != SQLITE_OK) {
-			snprintf(slog->error, SL_MAX_ERR, "INSERT(1) error (%d): "
-				 "%s", rc, err);
-			sqlite3_free(err);
+			snprintf(slog->error, SL_MAX_ERR,
+				 "%s", sqlite3_errmsg(slog->db));
 			goto rollback;
 		}
+
+		rc = sqlite3_bind_text(pstmt, 1, timebuf,
+				       strlen(timebuf), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 2, event->type);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 3, event->severity);
+		rc = rc ? rc : sqlite3_bind_text(pstmt, 4, uname_buf.machine,
+						 strlen(uname_buf.machine), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_text(pstmt, 5, serialbuf,
+						 strlen(serialbuf), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_text(pstmt, 6, modelbuf,
+						 strlen(modelbuf), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_text(pstmt, 7, uname_buf.nodename,
+						 strlen(uname_buf.nodename), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_text(pstmt, 8, event->refcode,
+						 strlen(event->refcode), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_text(pstmt, 9, description,
+						 strlen(description), SQLITE_STATIC);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 10, event->serviceable);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 11, event->predictive);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 12, event->disposition);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 13,
+						event->call_home_status);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 14, event->closed);
+		rc = rc ? rc : sqlite3_bind_int(pstmt, 15, n_callouts);
+		if (rc != SQLITE_OK) {
+			snprintf(slog->error, SL_MAX_ERR,
+				 "%s", sqlite3_errmsg(slog->db));
+			sqlite3_finalize(pstmt);
+			goto rollback;
+		}
+
+		rc = sqlite3_step(pstmt);
+		if (rc != SQLITE_ROW && rc != SQLITE_DONE) {
+			snprintf(slog->error, SL_MAX_ERR, "%s",
+				 sqlite3_errmsg(slog->db));
+			sqlite3_finalize(pstmt);
+			goto rollback;
+		}
+
+		rc = sqlite3_finalize(pstmt);
 
 		event_id = (uint64_t)sqlite3_last_insert_rowid(slog->db);
 		event->id = event_id;
@@ -341,19 +377,51 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 			else
 				ccin = "";
 
-			snprintf(buf, SQL_MAXLEN, "INSERT INTO callouts (event_id, "
-				 "priority, type, procedure, location, fru, "
-				 "serial, ccin) VALUES (""%" PRIu64 ", '%c', %d, '%s', "
-				 "'%s', '%s', '%s', '%s');", event_id,
-				 callout->priority, callout->type, proc, loc,
-				 fru, serial, ccin);
-			rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+			rc = sqlite3_prepare(slog->db, "INSERT INTO callouts"
+				" (event_id, priority, type, procedure,"
+				" location, fru, serial, ccin) VALUES (?, ?,"
+				" ?, ?, ?, ?, ?, ?);", -1, &pstmt, &out);
+
 			if (rc != SQLITE_OK) {
 				snprintf(slog->error, SL_MAX_ERR,
-					 "INSERT(3) error (%d): %s", rc, err);
-				sqlite3_free(err);
+					 "%s", sqlite3_errmsg(slog->db));
 				goto rollback;
 			}
+
+			rc = sqlite3_bind_int64(pstmt, 1, event_id);
+			rc = rc ? rc : sqlite3_bind_text(pstmt, 2,
+							 &(callout->priority),
+							 1, SQLITE_STATIC);
+			rc = rc ? rc : sqlite3_bind_int(pstmt, 3,
+							callout->type);
+			rc = rc ? rc : sqlite3_bind_text(pstmt, 4, proc,
+							 strlen(proc), SQLITE_STATIC);
+			rc = rc ? rc : sqlite3_bind_text(pstmt, 5, loc,
+							 strlen(loc), SQLITE_STATIC);
+			rc = rc ? rc : sqlite3_bind_text(pstmt, 6, fru,
+							 strlen(fru), SQLITE_STATIC);
+			rc = rc ? rc : sqlite3_bind_text(pstmt, 7, serial,
+							 strlen(serial), SQLITE_STATIC);
+			rc = rc ? rc : sqlite3_bind_text(pstmt, 8, ccin,
+							 strlen(ccin), SQLITE_STATIC);
+
+			if (rc != SQLITE_OK) {
+				snprintf(slog->error, SL_MAX_ERR, "%s",
+					 sqlite3_errmsg(slog->db));
+				sqlite3_finalize(pstmt);
+				goto rollback;
+			}
+
+			rc = sqlite3_step(pstmt);
+			if (rc != SQLITE_ROW && rc != SQLITE_DONE) {
+				snprintf(slog->error, SL_MAX_ERR, "%s",
+					 sqlite3_errmsg(slog->db));
+				sqlite3_finalize(pstmt);
+				goto rollback;
+			}
+
+			sqlite3_finalize(pstmt);
+
 			callout = callout->next;
 		}
 
@@ -669,23 +737,36 @@ int
 servicelog_event_close(servicelog *slog, uint64_t event_id)
 {
 	int rc;
-	char buf[80], *err;
+	sqlite3_stmt *pstmt = NULL;
+	const char *out;
 
 	if (slog == NULL)
-		return 1;
+		return SQLITE_ERROR;
 
-	snprintf(buf, 80, "UPDATE events SET closed=1 WHERE id=""%" PRIu64,
-		 event_id);
-
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+	rc = sqlite3_prepare(slog->db, "UPDATE events SET closed=1 WHERE id=?",
+			     -1, &pstmt, &out);
 	if (rc != SQLITE_OK) {
-		snprintf(slog->error, SL_MAX_ERR, "UPDATE error (%d): %s",
-			 rc, err);
-		sqlite3_free(err);
-		return 2;
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
+		return SQLITE_INTERNAL;
 	}
 
-	return 0;
+	rc = sqlite3_bind_int64(pstmt, 1, event_id);
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return SQLITE_INTERNAL;
 }
 
 int
@@ -693,23 +774,37 @@ servicelog_event_repair(servicelog *slog, uint64_t event_id,
 			uint64_t repair_id)
 {
 	int rc;
-	char buf[80], *err;
+	sqlite3_stmt *pstmt = NULL;
+	const char *out;
 
 	if (slog == NULL)
-		return 1;
+		return SQLITE_ERROR;
 
-	snprintf(buf, 80, "UPDATE events SET closed=1, repair=""%" PRIu64 " WHERE "
-		"id=""%" PRIu64, repair_id, event_id);
-
-	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
+	rc = sqlite3_prepare(slog->db, "UPDATE events SET closed=1, repair=?"
+			     " WHERE id=?", -1, &pstmt, &out);
 	if (rc != SQLITE_OK) {
-		snprintf(slog->error, SL_MAX_ERR, "UPDATE error (%d): %s",
-			 rc, err);
-		sqlite3_free(err);
-		return 2;
+		snprintf(slog->error, SL_MAX_ERR,
+			 "%s", sqlite3_errmsg(slog->db));
+		return SQLITE_INTERNAL;
 	}
 
-	return 0;
+	rc = sqlite3_bind_int64(pstmt, 1, repair_id);
+	rc = rc ? rc : sqlite3_bind_int64(pstmt, 2, event_id);
+	if (rc != SQLITE_OK)
+		goto sqlt_fail;
+
+	rc = sqlite3_step(pstmt);
+	if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+		goto sqlt_fail;
+
+	rc = sqlite3_finalize(pstmt);
+	return rc;
+
+sqlt_fail:
+	snprintf(slog->error, SL_MAX_ERR, "%s", sqlite3_errmsg(slog->db));
+	rc = sqlite3_finalize(pstmt);
+
+	return SQLITE_OK;
 }
 
 static int
@@ -723,7 +818,7 @@ delete_row(servicelog *slog, const char *table, const char *id_column,
 	rc = sqlite3_exec(slog->db, buf, NULL, NULL, &err);
 	if (rc != SQLITE_OK) {
 		snprintf(slog->error, SL_MAX_ERR, "DELETE error (%d): %s",
-								rc, err);
+			 rc, err);
 		sqlite3_free(err);
 	}
 	return rc;
