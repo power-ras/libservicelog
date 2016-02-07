@@ -566,7 +566,7 @@ convert_v1_repair_to_v29(servicelog *log, struct sl_repair_action *rpr1,
 		strncpy(next, rpr1->location, str_size);
 		ev29->location = next;
 		next += location_sz;
-		str_size -= (strlen(location_sz) + 1);
+		str_size -= (location_sz + 1);
 	}
 	if (procedure_sz) {
 		strncpy(next, rpr1->procedure, str_size);
