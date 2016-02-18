@@ -330,7 +330,7 @@ size_t
 get_system_info(char *var, char *buf, size_t sz)
 {
 	int n_read, n_junk_chars = 0;
-	char filebuf[32], junk_chars[6];
+	char filebuf[32];
 	FILE *fd;
 
 	buf[0] = '\0';
