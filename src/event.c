@@ -533,7 +533,7 @@ int
 servicelog_event_query(servicelog *slog, char *query,
 		       struct sl_event **event)
 {
-	int rc;
+	int rc, ret;
 	char buf[512], where[512], *err, *table, errstr[80];
 	struct sl_event *e = NULL;
 	int (*retrieve_fcn)(void *, int, char **, char **);
@@ -543,18 +543,32 @@ servicelog_event_query(servicelog *slog, char *query,
 	       return 1;
 
 	if ((query == NULL) || (event == NULL)) {
+		/* No need of checking snprintf return value here */
 		snprintf(slog->error, SL_MAX_ERR, "Invalid parameter(s)");
 		return 1;
 	}
 
 	*event = NULL;
 
-	if (strlen(query) > 0)
-		snprintf(where, 512, " WHERE (%s)", query);
-	else
+	if (strlen(query) > 0) {
+		ret = snprintf(where, sizeof(where), " WHERE (%s)", query);
+		if (ret >= sizeof(where)) {
+			/* No need of checking snprintf return value here */
+			snprintf(slog->error,
+				 SL_MAX_ERR, "Query size exceeds the limit(s)");
+			return 1;
+		}
+	} else
 		where[0] = 0;
 
-	snprintf(buf, 512, "SELECT * FROM %s%s", EVENTS_JOIN, where);
+	ret = snprintf(buf, sizeof(buf), "SELECT * FROM %s%s",
+		       EVENTS_JOIN, where);
+	if (ret >= sizeof(buf)) {
+		/* No need of checking snprintf return value here */
+		snprintf(slog->error, SL_MAX_ERR,
+			 "Query size exceeds the limit(s).");
+		return 1;
+	}
 
 	rc = replace_query_keywords(slog, buf, &stmt, errstr, 80);
 	if (rc != 0) {
@@ -693,8 +707,16 @@ servicelog_event_query(servicelog *slog, char *query,
 	e = *event;
 	while (e) {
 		/* Retrieve any callouts associated with this event */
-		snprintf(buf, 512, "SELECT * FROM callouts WHERE "
-			 "event_id = ""%" PRIu64 , e->id);
+		ret = snprintf(buf, sizeof(buf), "SELECT * FROM callouts WHERE "
+			       "event_id = ""%" PRIu64 , e->id);
+		if (ret >= sizeof(buf)) {
+			snprintf(slog->error, SL_MAX_ERR,
+				 "Query size exceeds the limit(s)");
+			servicelog_event_free(*event);
+			*event = NULL;
+			return 1;
+		}
+
 		rc = sqlite3_exec(slog->db, buf, build_callout, &(e->callouts),
 				  NULL);
 
@@ -703,8 +725,15 @@ servicelog_event_query(servicelog *slog, char *query,
 			table = addl_data_fcns[e->type].table;
 			retrieve_fcn = addl_data_fcns[e->type].retrieve;
 
-			snprintf(buf, 512, "SELECT * FROM %s WHERE "
-				 "event_id = ""%" PRIu64, table, e->id);
+			ret = snprintf(buf, sizeof(buf), "SELECT * FROM %s WHERE "
+				       "event_id = ""%" PRIu64, table, e->id);
+			if (ret >= sizeof(buf)) {
+				snprintf(slog->error, SL_MAX_ERR,
+					 "Query size exceeds the limit(s)");
+				servicelog_event_free(*event);
+				*event = NULL;
+				return 1;
+			}
 
 			rc = sqlite3_exec(slog->db, buf, retrieve_fcn, e, &err);
 			if (rc != SQLITE_OK) {
