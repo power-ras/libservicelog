@@ -1,12 +1,80 @@
-libservicelog
+libservicelog:
+--------------
+The libservicelog package contains a library to create and maintain a database
+for storing events related to system service. This database allows for the
+logging of serviceable and informational events, and for the logging of service
+procedures that have been performed upon the system.
 
-Installation (briefly, For more detailed instructions please see ./INSTALL):
-	# ./configure
-	# make
-	# make install
+Source:
+-------
+http://linux-diag.sf.net/servicelog.html
 
-Compilation Dependencies:
-	sqlite-devel
-	flex
-	bison
-	librtas-devel
+Mailing list:
+-------------
+linux-diag-devel@lists.sourceforge.net
+Info/subscribe : https://lists.sourceforge.net/lists/listinfo/linux-diag-devel
+
+License:
+--------
+See 'COPYING' file.
+
+Compilation dependencies:
+-------------------------
+- C and C++ compiler (gcc, g++)
+- GNU build tools (automake, autoconf, libtool, etc)
+- librtas-devel
+- sg3_utils-devel
+- flex
+- bison
+
+Binary dependencies:
+-------------
+- sqlite3
+- librtas
+
+Note:
+  - Package name may differ slightly between Linux distributors. Ex: RedHat and
+    SLES ships development packages as "-devel" while Ubuntu ships it as "-dev"
+    package. Please check your linux distribution package naming convention and
+    make sure you have installed right packages.
+
+Building:
+---------
+You can build on Power Linux system.
+
+$ ./bootstrap.sh
+$ ./configure [--prefix=/usr/]
+$ make
+$ make install
+
+Building rpms:
+--------------
+To build a tarball to feed to rpmbuild, do
+
+$ make dist-gzip
+
+As an example, we use a command similar to the following:
+
+$ rpmbuild -ba [--target=ppc/ppc64] <path-to-spec-file>
+
+Hacking:
+--------
+All patches should be sent to the mailing list with linux-kernel style
+'Signed-Off-By'. The following git commands are your friends:
+- git commit -s
+- git format-patch
+
+You probably want to read the linux Documentation/SubmittingPatches as
+much of it applies to libservicelog.
+
+Submitting patch:
+-----------------
+We use same mailing list for all Power Linux VPD and diagnostics projects
+(ppc64-diag, libvpd, lsvpd, [lib]servicelog). It is common convention to
+prefix your subject line with project name. This lets maintainer and other
+developers more easily identify patches from patches targeted to other
+projects. For example,
+
+  Subject: [libservicelog PATCH 01/10] Summary phrase
+
+--
