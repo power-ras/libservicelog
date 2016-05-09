@@ -50,7 +50,7 @@ install -D --mode=754 servicelog.db \
 %{__rm} -rf $RPM_BUILD_ROOT
 
 %pre
-getent group service >/dev/null || /usr/sbin/groupadd service
+getent group service >/dev/null || /usr/sbin/groupadd -r service
 
 %post -p /sbin/ldconfig
 
