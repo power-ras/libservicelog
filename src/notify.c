@@ -261,6 +261,8 @@ servicelog_notify_query(servicelog *slog, char *query,
 				n->notify = sqlite3_column_int(stmt, i);
 			else if (!strcmp(name, "command")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				n->command = strdup(str);
 				if (!n->command)
 					goto free_mem;
@@ -269,6 +271,8 @@ servicelog_notify_query(servicelog *slog, char *query,
 				n->method = sqlite3_column_int(stmt, i);
 			else if (!strcmp(name, "match")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				n->match = strdup(str);
 				if (!n->match)
 					goto free_mem;
@@ -658,6 +662,10 @@ check_notify(void *d, int argc, char **argv, char **column)
 	memset(&notify, 0, sizeof(struct sl_notify));
 
 	for (i=0; i<argc; i++) {
+
+		if ((!argv[i]) || (!column[i]))
+			goto free_mem;
+
 		if (!strcmp(column[i], "id"))
 			notify.id = strtoull(argv[i], NULL, 10);
 		else if (!strcmp(column[i], "time_logged")) {

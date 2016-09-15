@@ -293,6 +293,10 @@ retrieve_addl_data_os(void *e, int argc, char **argv, char **column)
 	os = (struct sl_data_os *)event->addl_data;
 
 	for (i=0; i<argc; i++) {
+
+		if ((!argv[i]) || (!column[i]))
+			goto free_mem;
+
 		if (!strcmp(column[i], "version")) {
 			os->version = strdup(argv[i]);
 			if (!os->version)
@@ -435,6 +439,10 @@ retrieve_addl_data_enclosure(void *e, int argc, char **argv, char **column)
 	encl = (struct sl_data_enclosure *)event->addl_data;
 
 	for (i=0; i<argc; i++) {
+
+		if ((!argv[i]) || (!column[i]))
+			goto free_mem;
+
 		if (!strcmp(column[i], "enclosure_serial")) {
 			encl->enclosure_serial = strdup(argv[i]);
 			if (!encl->enclosure_serial)

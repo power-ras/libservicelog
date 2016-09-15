@@ -466,6 +466,10 @@ build_callout(void *c, int argc, char **argv, char **column)
 		return 1;
 
 	for (i=0; i<argc; i++) {
+
+		if ((!argv[i]) || (!column[i]))
+			goto free_mem;
+
 		if (!strcmp(column[i], "priority"))
 			callout->priority = argv[i][0];
 		else if (!strcmp(column[i], "type"))
@@ -634,36 +638,48 @@ servicelog_event_query(servicelog *slog, char *query,
 				e->severity = sqlite3_column_int(stmt, i);
 			else if (!strcmp(name, "platform")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				e->platform = strdup(str);
 				if (!e->platform)
 					goto free_mem;
 			}
 			else if (!strcmp(name, "machine_serial")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				e->machine_serial = strdup(str);
 				if (!e->machine_serial)
 					goto free_mem;
 			}
 			else if (!strcmp(name, "machine_model")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				e->machine_model = strdup(str);
 				if (!e->machine_model)
 					goto free_mem;
 			}
 			else if (!strcmp(name, "nodename")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				e->nodename = strdup(str);
 				if (!e->nodename)
 					goto free_mem;
 			}
 			else if (!strcmp(name, "refcode")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				e->refcode = strdup(str);
 				if (!e->refcode)
 					goto free_mem;
 			}
 			else if (!strcmp(name, "description")) {
 				str = (char *)sqlite3_column_text(stmt, i);
+				if (!str)
+					goto free_mem;
 				e->description = strdup(str);
 				if (!e->description)
 					goto free_mem;
