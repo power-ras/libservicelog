@@ -148,10 +148,10 @@ servicelog_notify_log(servicelog *slog, struct sl_notify *notify,
 
 	rc = sqlite3_bind_int(pstmt, 1,	notify->notify);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, notify->command,
-					 strlen(notify->command), SQLITE_STATIC);
+		notify->command ? strlen(notify->command):0, SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, notify->method);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, notify->match,
-					 strlen(notify->match), SQLITE_STATIC);
+			notify->match ? strlen(notify->match):0, SQLITE_STATIC);
 	if (rc != SQLITE_OK)
 		goto sqlt_fail;
 
@@ -341,10 +341,10 @@ servicelog_notify_update(servicelog *slog, uint64_t notify_id,
 
 	rc = sqlite3_bind_int(pstmt, 1, notify->notify);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, notify->command,
-					 strlen(notify->command), SQLITE_STATIC);
+		notify->command ? strlen(notify->command):0, SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_int(pstmt, 3, notify->method);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, notify->match,
-					 strlen(notify->match), SQLITE_STATIC);
+			notify->match ? strlen(notify->match):0, SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_int64(pstmt, 5, notify_id);
 	if (rc != SQLITE_OK)
 		goto sqlt_fail;

@@ -194,9 +194,11 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	rc = sqlite3_bind_text(pstmt, 1, timebuf,
 			       strlen(timebuf), SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, repair->procedure,
-					 strlen(repair->procedure), SQLITE_STATIC);
+				repair->procedure ? strlen(repair->procedure):0,
+				SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 3, repair->location,
-					 strlen(repair->location), SQLITE_STATIC);
+				repair->location ? strlen(repair->location):0,
+				SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, uname_buf.machine,
 					 strlen(uname_buf.machine), SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 5, serialbuf,
@@ -204,7 +206,7 @@ servicelog_repair_log(servicelog *slog, struct sl_repair_action *repair,
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 6, modelbuf,
 					 strlen(modelbuf), SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 7, repair->notes,
-					 strlen(repair->notes), SQLITE_STATIC);
+			repair->notes ? strlen(repair->notes):0, SQLITE_STATIC);
 	if (rc != SQLITE_OK)
 		goto sqlt_fail;
 

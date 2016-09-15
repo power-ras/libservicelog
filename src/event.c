@@ -294,10 +294,11 @@ servicelog_event_log(servicelog *slog, struct sl_event *event,
 		rc = rc ? rc : sqlite3_bind_text(pstmt, 7, uname_buf.nodename,
 						 strlen(uname_buf.nodename), SQLITE_STATIC);
 		rc = rc ? rc : sqlite3_bind_text(pstmt, 8, event->refcode,
-						 strlen(event->refcode), SQLITE_STATIC);
+					event->refcode ? strlen(event->refcode):0,
+					SQLITE_STATIC);
 		rc = rc ? rc : sqlite3_bind_text(pstmt, 9, event->description,
-						 strlen(event->description),
-						 SQLITE_STATIC);
+					event->description ? strlen(event->description):0,
+					 SQLITE_STATIC);
 		rc = rc ? rc : sqlite3_bind_int(pstmt, 10, event->serviceable);
 		rc = rc ? rc : sqlite3_bind_int(pstmt, 11, event->predictive);
 		rc = rc ? rc : sqlite3_bind_int(pstmt, 12, event->disposition);

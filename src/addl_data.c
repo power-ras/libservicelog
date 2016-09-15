@@ -76,13 +76,13 @@ insert_addl_data_os(servicelog *slog, struct sl_event *event)
 
 	rc = sqlite3_bind_int64(pstmt, 1, event->id);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, version,
-					 strlen(version), SQLITE_STATIC);
+				version ? strlen(version):0, SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 3, os->subsystem,
-					 strlen(os->subsystem), SQLITE_STATIC);
+			os->subsystem ? strlen(os->subsystem):0, SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 4, os->driver,
-					 strlen(os->driver), SQLITE_STATIC);
+			os->driver ? strlen(os->driver):0, SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 5, os->device,
-					 strlen(os->device), SQLITE_STATIC);
+			os->device ? strlen(os->device):0, SQLITE_STATIC);
 
 	if (rc != SQLITE_OK)
 		goto sqlt_fail;
@@ -192,9 +192,11 @@ insert_addl_data_enclosure(servicelog *slog, struct sl_event *event)
 
 	rc = sqlite3_bind_int64(pstmt, 1, event->id);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 2, encl->enclosure_model,
-					 strlen(encl->enclosure_model), SQLITE_STATIC);
+			encl->enclosure_model ? strlen(encl->enclosure_model):0
+					, SQLITE_STATIC);
 	rc = rc ? rc : sqlite3_bind_text(pstmt, 3, encl->enclosure_serial,
-					 strlen(encl->enclosure_serial), SQLITE_STATIC);
+		encl->enclosure_serial ? strlen(encl->enclosure_serial):0,
+		SQLITE_STATIC);
 
 	if (rc != SQLITE_OK)
 		goto sqlt_fail;
