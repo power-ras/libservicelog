@@ -63,6 +63,9 @@ insert_addl_data_os(servicelog *slog, struct sl_event *event)
 
 	if (os->version == NULL) {
 		rc = uname(&uname_buf);
+		if (rc)
+			return -1;
+
 		version = uname_buf.version;
 	}
 	else
