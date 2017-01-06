@@ -503,7 +503,7 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 	struct sl_repair_action *repair = NULL;
 	void *record = records;
 	uint64_t id = 0;
-	int pipe_fd[2], pid, i;
+	int pipe_fd[2], pid, i, rc = 0;
 	FILE *stream;
 
 	if (notify == NULL)
@@ -534,13 +534,21 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 		}
 
 		pid = fork();
-
 		if (pid == -1) {	/* fork failed */
+			if (notify->method != SL_METHOD_NUM_VIA_CMD_LINE) {
+				close(pipe_fd[0]);
+				close(pipe_fd[1]);
+			}
 			continue;
-		}
-		else if (pid == 0) {	/* child; set up pipes, exec command */
-			close(pipe_fd[1]);
-			dup2(pipe_fd[0], fileno(stdin));
+		} else if (pid == 0) {	/* child; set up pipes, exec command */
+			if (notify->method != SL_METHOD_NUM_VIA_CMD_LINE) {
+				close(pipe_fd[1]);
+				rc = dup2(pipe_fd[0], fileno(stdin));
+				if (rc == -1) {
+					close(pipe_fd[0]);
+					return -1;
+				}
+			}
 
 			/* build up args for execv */
 			for (i = 0; i < 30; i++)
