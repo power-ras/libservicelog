@@ -603,21 +603,27 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 		else if (notify->method == SL_METHOD_PRETTY_VIA_STDIN) {
 			close(pipe_fd[0]);
 			stream = fdopen(pipe_fd[1], "w");
-			if (type == SL_NOTIFY_EVENTS)
-				servicelog_event_print(stream, event, 2);
-			else if (type == SL_NOTIFY_REPAIRS)
-				servicelog_repair_print(stream, repair, 2);
-			fclose(stream);
+			if (stream) {
+				if (type == SL_NOTIFY_EVENTS)
+					servicelog_event_print(stream, event, 2);
+				else if (type == SL_NOTIFY_REPAIRS)
+					servicelog_repair_print(stream, repair, 2);
+
+				fclose(stream);
+			}
 			close(pipe_fd[1]);
 		}
 		else if (notify->method == SL_METHOD_SIMPLE_VIA_STDIN) {
 			close(pipe_fd[0]);
 			stream = fdopen(pipe_fd[1], "w");
-			if (type == SL_NOTIFY_EVENTS)
-				servicelog_event_print(stream, event, -1);
-			else if (type == SL_NOTIFY_REPAIRS)
-				servicelog_repair_print(stream, repair, -1);
-			fclose(stream);
+			if (!stream) {
+				if (type == SL_NOTIFY_EVENTS)
+					servicelog_event_print(stream, event, -1);
+				else if (type == SL_NOTIFY_REPAIRS)
+					servicelog_repair_print(stream,repair, -1);
+
+				fclose(stream);
+			}
 			close(pipe_fd[1]);
 		}
 
