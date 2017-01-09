@@ -504,6 +504,7 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 	void *record = records;
 	uint64_t id = 0;
 	int pipe_fd[2], pid, i, rc = 0;
+	ssize_t __attribute__((unused)) rc1;
 	FILE *stream;
 
 	if (notify == NULL)
@@ -597,7 +598,7 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 		if (notify->method == SL_METHOD_NUM_VIA_STDIN) {
 			close(pipe_fd[0]);
 			snprintf(buf, 128, "%" PRIu64, id);
-			write(pipe_fd[1], buf, strlen(buf));
+			rc1 = write(pipe_fd[1], buf, strlen(buf));
 			close(pipe_fd[1]);
 		}
 		else if (notify->method == SL_METHOD_PRETTY_VIA_STDIN) {
