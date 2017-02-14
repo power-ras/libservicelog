@@ -44,6 +44,12 @@ AM_LFLAGS	= -Pv29nfy_ -olex.yy.c
 libservicelog_la_LDFLAGS = -module -version-info \
 	@GENERIC_API_VERSION@ -release @GENERIC_RELEASE@
 
+check_PROGRAMS = src/tests/test_libservicelog
+src_tests_test_libservicelog_SOURCES = src/tests/test_libservicelog.c
+src_tests_test_libservicelog_LDADD = .libs/libservicelog.so
+
+check: all $(check_PROGRAMS)
+
 LIBTOOL_DEPS = @LIBTOOL_DEPS@
 libtool: $(LIBTOOL_DEPS)
 	$(SHELL) ./config.status --recheck

@@ -33,6 +33,7 @@ AC_SUBST(GENERIC_VERSION)
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CXX
 AC_PROG_YACC
 AC_PROG_LEX
 AC_PROG_INSTALL
@@ -40,6 +41,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
+AM_PROG_CC_C_O
 
 # Checks for libraries.
 AC_CHECK_LIB([sqlite3], [sqlite3_open], [], [
