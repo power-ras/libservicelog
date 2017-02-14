@@ -1,0 +1,21 @@
+Servicelog ID:      1
+Log Timestamp:      Sat Jun  4 11:00:09 2016
+Event Timestamp:    Wed Dec 31 23:00:00 1969
+Update Timestamp:   Sat Jun  4 11:00:09 2016
+Type:               I/O Enclosure Event
+Severity:           2 (INFO)
+Platform:           ppc64le
+Model/Serial:       machine-model/machine-serial
+Node Name:          tuleta4u-lp10.aus.stglabs.ibm.com
+Reference Code:     Bug Repro
+Serviceable Event:  No
+Predictive Event:   No
+Disposition:        0 (Recoverable)
+Call Home Status:   0 (None Needed)
+Status:             Closed
+Enclosure Serial:   testx-enclosure-serial-check-1.0
+Enclosure Model:    testx-enclosure-model-check-1.0
+
+Description:
+Some Error Return
+

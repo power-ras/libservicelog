@@ -15,7 +15,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = servicelog.db bootstrap.sh
+EXTRA_DIST = servicelog.db bootstrap.sh src/tests/*
 
 #AM_CPPFLAGS	= -I.. -I./servicelog-1/
 AM_CFLAGS	= -Wall -g -I.. -I./servicelog-1 -DDEST_DIR='"${exec_prefix}"'
@@ -47,8 +47,6 @@ libservicelog_la_LDFLAGS = -module -version-info \
 check_PROGRAMS = src/tests/test_libservicelog
 src_tests_test_libservicelog_SOURCES = src/tests/test_libservicelog.c
 src_tests_test_libservicelog_LDADD = .libs/libservicelog.so
-
-check: all $(check_PROGRAMS)
 
 LIBTOOL_DEPS = @LIBTOOL_DEPS@
 libtool: $(LIBTOOL_DEPS)

@@ -1,0 +1,23 @@
+Servicelog ID:      1
+Log Timestamp:      Mon May 30 12:22:22 2016
+Event Timestamp:    Wed Dec 31 23:00:00 1969
+Update Timestamp:   Mon May 30 12:22:22 2016
+Type:               Operating System Event
+Severity:           2 (INFO)
+Platform:           ppc64le
+Model/Serial:       machine-model/machine-serial
+Node Name:          tuleta4u-lp10.aus.stglabs.ibm.com
+Reference Code:     Bug Repro
+Serviceable Event:  No
+Predictive Event:   No
+Disposition:        0 (Recoverable)
+Call Home Status:   0 (None Needed)
+Status:             Closed
+Kernel Version:     testx-2.5.6-guess
+Subsystem:          testx-linux-guess
+Driver:             testx-kernerl-driver-guess
+Device:             testx-scsidev-guess
+
+Description:
+Some Error Return
+

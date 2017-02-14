@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#WARNING: DO NOT RUN THIS FILE DIRECTLY
+#  This file expects to be a part of libservicelog test suite
+#  Run this file with ../run_tests -t test-003-log_rtas_event -q
+
+truncate_events
+log_event "$SERVICELOG_EVENT_RTAS"

@@ -1,0 +1,28 @@
+Servicelog ID:      1
+Log Timestamp:      Sat Jun  4 11:01:12 2016
+Event Timestamp:    Wed Dec 31 23:00:00 1969
+Update Timestamp:   Sat Jun  4 11:01:13 2016
+Type:               BMC Event
+Severity:           2 (INFO)
+Platform:           ppc64le
+Model/Serial:       machine-model/machine-serial
+Node Name:          tuleta4u-lp10.aus.stglabs.ibm.com
+Reference Code:     Bug Repro
+Serviceable Event:  No
+Predictive Event:   No
+Disposition:        0 (Recoverable)
+Call Home Status:   0 (None Needed)
+Status:             Closed
+SEL ID:             1234543
+SEL Type:           12d670 - Unknown
+Generator ID:3039
+Format Version:df
+Sensor Type:        000000de
+Sensor Number:      000000dd
+Event Class:        000000dc
+Event Type:         000000e0
+Direction:          Deassert
+
+Description:
+Some Error Return
+

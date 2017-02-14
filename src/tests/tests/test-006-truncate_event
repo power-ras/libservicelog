@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#WARNING: DO NOT RUN THIS FILE DIRECTLY
+#  This file expects to be a part of libservicelog test suite
+#  Run this file with ../run_tests -t test-006-truncate_event -q
+
+
+# Clear all old events(Truncate events)
+truncate_events
+#log_event "$SERVICELOG_EVENT_BMC"
+run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_BMC
+truncate_events

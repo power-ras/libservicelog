@@ -1,0 +1,168 @@
+#!/bin/bash
+
+export RED='\e[0;31m'
+export GRN='\e[0;32m'
+export YLW='\e[0;33m'
+export NC='\e[0m' # No Colour
+
+# Binary file
+export TEST_LIBSERVICELOG_BINARY_NAME=test_libservicelog
+
+# Output directory
+TEST_RESULT_DIR=tests-results
+
+export OUT_STDERR=`mktemp -d --tmpdir libservicelog-run_tests.stderr.XXXXXXXXXX`
+export OUT_STDOUT=`mktemp -d --tmpdir libservicelog-run_tests.stdout.XXXXXXXXXX`
+
+# Event type
+export SERVICELOG_EVENT_BASIC=1
+export SERVICELOG_EVENT_OS=2
+export SERVICELOG_EVENT_RTAS=3
+export SERVICELOG_EVENT_ENCL=4
+export SERVICELOG_EVENT_BMC=5
+export SERVICELOG_EVENT_DUMP=6
+export SERVICELOG_EVENT_TRUNCATE=7
+
+function run_binary {
+	if [[ -x $1 ]] ; then
+		$VALGRIND $1 $2 1>> $OUT_STDOUT/$CUR_TEST.out 2>> $OUT_STDERR/$CUR_TEST.err
+	else
+		echo "Fatal error, cannot execute binary '$1'. Did you make?";
+		rm -rf $OUT_STDERR $OUT_STDOUT
+		exit 1;
+	fi
+}
+
+function diff_with_result {
+	# Explicitly diff 2 arbitrary file
+	if [[ $# -eq 2 ]] ; then
+		if ! diff -u $1 $2 ; then
+			register_fail;
+		fi
+	# Explicitly diff a file with an arbitrary result file
+	elif [[ $# -eq 1 ]] ; then
+		if ! diff -u $RESULT $1 ; then
+			register_fail;
+		fi
+	# Otherwise just diff result.out with stdout and result.err with stderr
+	else
+		if ! diff -u ${RESULT}.out $OUT_STDOUT/$CUR_TEST.out >> /dev/null ; then
+			register_fail;
+		fi
+		if ! diff -u ${RESULT}.err $OUT_STDERR/$CUR_TEST.err >> /dev/null ; then
+			register_fail;
+		fi
+	fi
+	register_success;
+}
+
+function diff_with_result_without_timestamp {
+	if [ ! -f ${RESULT}.out ]; then
+		echo "File ${RESULT}.out not found"
+		register_fail;
+	elif [ ! -f $OUT_STDOUT/$CUR_TEST.out ]; then
+		echo "File $OUT_STDOUT/$CUR_TEST.out not found"
+		register_fail;
+	fi
+        diff -a -y --suppress-common-line ${RESULT}.out $OUT_STDOUT/$CUR_TEST.out |  cut  -d ' ' -f1,2 >> $OUT_STDOUT/$CUR_TEST.scl.out
+        filename="$OUT_STDOUT/$CUR_TEST.scl.out"
+        while read -r line
+        do
+                name=$line
+		if [ "$name" != "Log Timestamp:" ] && [ "$name" != "Event Timestamp:" ] && [ "$name" != "Update Timestamp:" ] && [ "$name" != "Platform:" ] && [ "$name" != "Node Name:" ]
+                then
+                      register_fail;
+                fi
+        done < "$filename"
+       register_success;
+}
+
+function register_success {
+	/bin/true
+}
+
+function register_fail {
+	echo "FAIL $CUR_TEST ";
+	rm -rf $OUT_STDOUT $OUT_STDERR
+	exit ${1:-1};
+}
+
+function truncate_events {
+	# Clear all events
+	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_TRUNCATE
+	R=$?
+	if [ $R -ne 0 ]; then
+		register_fail $R;
+	fi
+
+	rm $OUT_STDERR/$CUR_TEST.err
+	rm $OUT_STDOUT/$CUR_TEST.out
+
+	# Retrieve logged event
+	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_DUMP
+	R=$?
+	if [ $R -ne 0 ]; then
+		register_fail $R;
+	fi
+
+	if [ -s $OUT_STDOUT/$CUR_TEST.out ]; then
+		register_fail;
+	fi
+
+	rm $OUT_STDERR/$CUR_TEST.err
+	rm $OUT_STDOUT/$CUR_TEST.out
+}
+
+function log_event {
+	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $1
+	R=$?
+	if [ $R -ne 0 ]; then
+		register_fail $R;
+	fi
+	rm $OUT_STDERR/$CUR_TEST.err
+	rm $OUT_STDOUT/$CUR_TEST.out
+
+	# Retrieve logged event
+	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_DUMP
+	R=$?
+	if [ $R -ne 0 ]; then
+		register_fail $R;
+	fi
+
+	diff_with_result_without_timestamp
+	rm $OUT_STDERR/$CUR_TEST.err
+	rm $OUT_STDOUT/$CUR_TEST.out
+	register_success
+}
+
+Q=0
+all_tests="tests/*"
+
+while getopts ":qt:" opt; do
+	case "$opt" in
+		q)
+			q=1
+			;;
+		t)
+			all_tests=$OPTARG
+	esac
+done
+
+for the_test in $all_tests; do
+	export CUR_TEST=$(basename $the_test)
+	export RESULT="tests-results/$CUR_TEST.result"
+	if [[ $q -eq 1 ]] ; then
+		source "$the_test"
+	else
+		source "$the_test"
+	fi
+	R=$?
+	if [[ $R -ne 0 ]] ; then
+		echo -e "${RED}$the_test FAILED with RC $R${NC}"
+		exit $R
+	fi
+done
+
+rm -rf $OUT_STDERR $OUT_STDOUT
+echo PASS
+exit 0

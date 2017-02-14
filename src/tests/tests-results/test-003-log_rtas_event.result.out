@@ -1,0 +1,31 @@
+Servicelog ID:      1
+Log Timestamp:      Mon Feb 13 15:47:39 2017
+Event Timestamp:    Thu Jan  1 00:00:00 1970
+Update Timestamp:   Mon Feb 13 16:47:39 2017
+Type:               Power Platform (RTAS) Event
+Severity:           2 (INFO)
+Platform:           ppc64
+Model/Serial:       machine-model/machine-serial
+Node Name:          everest-lp12.aus.stglabs.ibm.com
+Reference Code:     Bug Repro
+Serviceable Event:  Yes
+Predictive Event:   Yes
+Disposition:        0 (Recoverable)
+Call Home Status:   1 (Call Home Candidate)
+Status:             Closed
+Action Flags:       a800
+Event Type:         224 - Platform Event
+Kernel ID:          1000
+Platform ID:        820005ed
+Creator ID:         H - Hypervisor
+Subsystem ID:       82 - Platform firmware
+RTAS Severity:      40 - Unrecoverable Error, general
+Event Subtype:      00 - Not applicable
+
+Extended Reference Codes:
+2: 0fd01000  3: 00000000  4: 00000000  5: 00000000
+6: 00000000  7: 00000000  8: 00000000  9: 00000000
+
+Description:
+Some Error Return
+

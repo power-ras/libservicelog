@@ -1,0 +1,19 @@
+Servicelog ID:      1
+Log Timestamp:      Sat Jun  4 10:56:51 2016
+Event Timestamp:    Wed Dec 31 23:00:00 1969
+Update Timestamp:   Sat Jun  4 10:56:51 2016
+Type:               Basic Event
+Severity:           2 (INFO)
+Platform:           ppc64le
+Model/Serial:       machine-model/machine-serial
+Node Name:          tuleta4u-lp10.aus.stglabs.ibm.com
+Reference Code:     Bug Repro
+Serviceable Event:  No
+Predictive Event:   No
+Disposition:        0 (Recoverable)
+Call Home Status:   0 (None Needed)
+Status:             Closed
+
+Description:
+Some Error Return
+
