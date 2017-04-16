@@ -6,10 +6,11 @@ export YLW='\e[0;33m'
 export NC='\e[0m' # No Colour
 
 # Binary file
-export TEST_LIBSERVICELOG_BINARY_NAME=test_libservicelog
+PWD=`pwd`/`dirname $0`
+export TEST_LIBSERVICELOG_BINARY_NAME=${PWD}/test_libservicelog
 
 # Output directory
-TEST_RESULT_DIR=tests-results
+TEST_RESULT_DIR=${PWD}/tests-results
 
 export OUT_STDERR=`mktemp -d --tmpdir libservicelog-run_tests.stderr.XXXXXXXXXX`
 export OUT_STDOUT=`mktemp -d --tmpdir libservicelog-run_tests.stdout.XXXXXXXXXX`
@@ -89,7 +90,7 @@ function register_fail {
 
 function truncate_events {
 	# Clear all events
-	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_TRUNCATE
+	run_binary "$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_TRUNCATE
 	R=$?
 	if [ $R -ne 0 ]; then
 		register_fail $R;
@@ -99,7 +100,7 @@ function truncate_events {
 	rm $OUT_STDOUT/$CUR_TEST.out
 
 	# Retrieve logged event
-	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_DUMP
+	run_binary "$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_DUMP
 	R=$?
 	if [ $R -ne 0 ]; then
 		register_fail $R;
@@ -114,7 +115,7 @@ function truncate_events {
 }
 
 function log_event {
-	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $1
+	run_binary "$TEST_LIBSERVICELOG_BINARY_NAME" $1
 	R=$?
 	if [ $R -ne 0 ]; then
 		register_fail $R;
@@ -123,7 +124,7 @@ function log_event {
 	rm $OUT_STDOUT/$CUR_TEST.out
 
 	# Retrieve logged event
-	run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_DUMP
+	run_binary "$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_DUMP
 	R=$?
 	if [ $R -ne 0 ]; then
 		register_fail $R;
@@ -136,7 +137,7 @@ function log_event {
 }
 
 Q=0
-all_tests="tests/*"
+all_tests="${PWD}/tests/*"
 
 while getopts ":qt:" opt; do
 	case "$opt" in
@@ -150,7 +151,7 @@ done
 
 for the_test in $all_tests; do
 	export CUR_TEST=$(basename $the_test)
-	export RESULT="tests-results/$CUR_TEST.result"
+	export RESULT="${TEST_RESULT_DIR}/$CUR_TEST.result"
 	if [[ $q -eq 1 ]] ; then
 		source "$the_test"
 	else

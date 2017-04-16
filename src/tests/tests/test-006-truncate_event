@@ -8,5 +8,5 @@
 # Clear all old events(Truncate events)
 truncate_events
 #log_event "$SERVICELOG_EVENT_BMC"
-run_binary "./$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_BMC
+run_binary "$TEST_LIBSERVICELOG_BINARY_NAME" $SERVICELOG_EVENT_BMC
 truncate_events
