@@ -262,7 +262,7 @@ servicelog_notify_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "command")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				n->command = strdup(str);
 				if (!n->command)
 					goto free_mem;
@@ -272,7 +272,7 @@ servicelog_notify_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "match")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				n->match = strdup(str);
 				if (!n->match)
 					goto free_mem;

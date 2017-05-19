@@ -395,7 +395,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "procedure")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				r->procedure = strdup(str);
 				if (!r->procedure)
 					goto free_mem;
@@ -403,7 +403,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "location")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				r->location = strdup(str);
 				if (!r->location)
 					goto free_mem;
@@ -411,7 +411,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "platform")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				r->platform = strdup(str);
 				if (!r->platform)
 					goto free_mem;
@@ -419,7 +419,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "machine_serial")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				r->machine_serial = strdup(str);
 				if (!r->machine_serial)
 					goto free_mem;
@@ -427,7 +427,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "machine_model")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				r->machine_model = strdup(str);
 				if (!r->machine_model)
 					goto free_mem;
@@ -435,7 +435,7 @@ servicelog_repair_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "notes")) {
 				str = (char *)sqlite3_column_text(stmt, i);
 				if (!str)
-					goto free_mem;
+					str = "";
 				r->notes = strdup(str);
 				if (!r->notes)
 					goto free_mem;
