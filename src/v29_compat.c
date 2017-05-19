@@ -401,13 +401,14 @@ convert_encl_to_v29(servicelog *log, struct sl_event *ev, void **data29,
 		return ENOMEM;
 	}
 
+	memset(ev29, 0, ev29_sz);
 	encl29.head.event_length = (uint32_t) ev29_sz;
 	memcpy(ev29, &encl29, sizeof(encl29));
 	next = (char*) ev29;
 	next += sizeof(encl29);
 
 	if (description_sz) {
-		strncpy(next, ev->description, (ev29_sz - sizeof(encl29) - 1));
+		strncpy(next, ev->description, (ev29_sz - sizeof(encl29)));
 		ev29->description = next;
 		next += description_sz;
 	}
@@ -556,17 +557,18 @@ convert_v1_repair_to_v29(servicelog *log, struct sl_repair_action *rpr1,
 		return ENOMEM;
 	}
 
+	memset(ev29, 0, ev29_sz);
 	rpr29.head.event_length = (uint32_t) ev29_sz;
 	memcpy(ev29, &rpr29, sizeof(rpr29));
 	next = (char*) ev29;
 	next += sizeof(rpr29);
 
-	str_size = (ev29_sz - sizeof(rpr29) - 1);
+	str_size = ev29_sz - sizeof(rpr29);
 	if (location_sz) {
 		strncpy(next, rpr1->location, str_size);
 		ev29->location = next;
 		next += location_sz;
-		str_size -= (location_sz + 1);
+		str_size -= location_sz;
 	}
 	if (procedure_sz) {
 		strncpy(next, rpr1->procedure, str_size);
