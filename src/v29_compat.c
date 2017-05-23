@@ -295,6 +295,7 @@ convert_rtas_to_v29(servicelog *log, struct sl_event *ev, void **data29,
 	cond_strcpy(rtas29.refcode, ev->refcode, 9);
 	memcpy(rtas29.addl_words, rtas1->addl_words, 8*sizeof(uint32_t));
 	cond_strcpy(rtas29.machine_type, ev->machine_model, 9);
+	cond_strcpy(rtas29.machine_serial_no, ev->machine_serial, 13);
 	if (ev->description)
 		description_sz = strlen(ev->description) + 1;
 	rtas29.rtas_event_len = ev->raw_data_len;
