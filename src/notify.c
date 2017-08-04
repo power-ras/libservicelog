@@ -617,7 +617,7 @@ run_notification_tool(struct sl_notify *notify, int type, void *records)
 		else if (notify->method == SL_METHOD_SIMPLE_VIA_STDIN) {
 			close(pipe_fd[0]);
 			stream = fdopen(pipe_fd[1], "w");
-			if (!stream) {
+			if (stream) {
 				if (type == SL_NOTIFY_EVENTS)
 					servicelog_event_print(stream, event, -1);
 				else if (type == SL_NOTIFY_REPAIRS)
