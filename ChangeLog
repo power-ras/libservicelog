@@ -1,3 +1,9 @@
+* Tue Aug 22 2017 Ankit Kumar <ankit@linux.vnet.ibm.com> 1.1.18
+- Sqlite bind call validation
+- Added libservicelog test cases
+- Print machine serial number
+- Fixed few regression issues
+
 * Wed Mar 22 2017 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> 1.1.17
 - NULL check before calling strdup
 - Fixed various bugs
