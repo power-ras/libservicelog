@@ -46,7 +46,7 @@ libservicelog_la_LDFLAGS = -module -version-info \
 
 check_PROGRAMS = src/tests/test_libservicelog
 src_tests_test_libservicelog_SOURCES = src/tests/test_libservicelog.c
-src_tests_test_libservicelog_LDADD = .libs/libservicelog.so
+src_tests_test_libservicelog_LDADD = libservicelog.la
 
 TESTS=src/tests/run_tests
 
