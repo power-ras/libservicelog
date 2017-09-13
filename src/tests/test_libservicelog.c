@@ -47,8 +47,8 @@ static int truncate_all_events(void)
 
 	rc = servicelog_open(&slog, SL_FLAG_ADMIN);
 	if (rc != 0) {
-		fprintf(stderr, "Could not open servicelog database.\n%s\n",
-			servicelog_error(slog));
+		fprintf(stderr, "Could not open servicelog database: %s\n",
+			strerror(rc));
 		return -1;
 	}
 
@@ -109,8 +109,8 @@ static int svc_event_log(struct sl_event *event, int event_type,
 
         rc = servicelog_open(&slog, SL_FLAG_ADMIN);
         if ( rc != 0 ) {
-		fprintf(stderr, "Could not open servicelog database.\n%s\n",
-			servicelog_error(slog));
+		fprintf(stderr, "Could not open servicelog database: %s\n",
+			strerror(rc));
                 return -1;
         }
 
