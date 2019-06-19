@@ -71,7 +71,7 @@ static int truncate_all_events(void)
 	}
 	servicelog_event_free(events);
 
-	servicelog_repair_query(slog, "", &repairs);
+	rc = servicelog_repair_query(slog, "", &repairs);
 	if (rc) {
 		fprintf(stderr, "Failed to read events from database.\n%s\n",
 			servicelog_error(slog));
@@ -261,8 +261,8 @@ static int retrieve_logged_event(void)
 
 	rc = servicelog_open(&slog, 0);
 	if (rc) {
-		fprintf(stderr, "Could not open servicelog database.\n%s\n",
-			servicelog_error(slog));
+		fprintf(stderr, "Could not open servicelog database: %s\n",
+			strerror(rc));
 		return -1;
 	}
 
