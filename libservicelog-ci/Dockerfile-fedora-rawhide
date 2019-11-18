@@ -1,0 +1,5 @@
+FROM fedora:rawhide
+RUN dnf -y install rpm-build gcc make valgrind servicelog libservicelog
+RUN dnf -y install sqlite-devel bison flex librtas-devel libtool automake
+COPY . /build/
+WORKDIR /build
