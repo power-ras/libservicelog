@@ -154,9 +154,9 @@ sl_printf(FILE *stream, char *fmt, ...)
             if (newline != NULL) {
                 prnt_len = newline - &tmpbuf[offset] + 1;
                 size -= buf_offset;
-                snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
+                snprintf(buf + buf_offset, prnt_len, "%s", &tmpbuf[offset]);
                 buf_offset = strlen(buf);
-                buf_offset += snprintf(buf + buf_offset, size, "\n");
+                buf_offset += snprintf(buf + buf_offset, prnt_len, "\n");
                 offset += prnt_len;
                 line_offset = 0;
                 break;
@@ -174,10 +174,16 @@ sl_printf(FILE *stream, char *fmt, ...)
 
             /* print up to the last brkpt */
             size -= buf_offset;
-            snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
+            snprintf(buf + buf_offset, prnt_len, "%s", &tmpbuf[offset]);
             buf_offset = strlen(buf);
-            buf_offset += snprintf(buf + buf_offset, size, "\n");
+            buf_offset += snprintf(buf + buf_offset, prnt_len, "\n");
             offset += prnt_len;
+            /*
+	     * Exclude the newline added. If whitespace was there it was
+	     * overwritten by the new line, no need to reconsider that
+	     */
+            if (brkpt == NULL)
+                offset--;
             line_offset = 0;
         }
 
@@ -680,7 +686,7 @@ skip_v6:
 		return count;
 	}
 
-	count += sl_printf(str, "\nExtended Reference Codes:\n");
+	count += sl_printf(str, "\nExtended Reference Codes:");
 	count += sl_printf(str, "2: %08x  3: %08x  4: %08x  5: %08x\n",
 			   ppc64->addl_words[0], ppc64->addl_words[1],
 			   ppc64->addl_words[2], ppc64->addl_words[3]);
