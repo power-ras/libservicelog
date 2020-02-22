@@ -8,8 +8,8 @@ Summary:        Servicelog Database and Library
 Group:          System Environment/Libraries
 License:        LGPLv2
 Vendor:         IBM Corp.
-URL:            https://github.com/power-ras/libservicelog
-Source0:        https://github.com/power-ras/%{name}/archive/v%{version}.tar.gz
+URL:            https://github.com/power-ras/%{name}/releases
+Source0:        https://github.com/power-ras/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
 ExclusiveArch:	ppc ppc64 ppc64le
 BuildRequires:  sqlite-devel bison flex librtas-devel libtool automake
 Requires(pre):	/usr/sbin/groupadd
