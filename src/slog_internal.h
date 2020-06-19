@@ -57,6 +57,7 @@ struct servicelog {
 		"LEFT JOIN enclosure ON enclosure.event_id = events.id " \
 		"LEFT JOIN bmc ON bmc.event_id = events.id "
 
+extern int sl_print_width;
 
 int sl_hex_dump(FILE *str, void *data, size_t len);
 int sl_printf(FILE *stream, char *fmt, ...);

@@ -178,7 +178,7 @@ static char *sql_trigger_update_notification =
 
 extern int errno;
 
-static char sl_print_width = 80;
+int sl_print_width = 80;
 static int line_offset = 0;
 
 /**

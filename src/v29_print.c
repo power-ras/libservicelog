@@ -45,7 +45,6 @@
 static char *severity_text[] = { "", "DEBUG", "INFO", "EVENT", "WARNING",
 				 "ERROR_LOCAL", "ERROR", "FATAL" };
 
-static char sl_print_width = 80;
 
 int
 _v29_get_event_type_title(struct sl_header *hdr, char **title)
