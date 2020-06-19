@@ -234,7 +234,7 @@ sl_hex_dump(FILE *str, void *data, size_t len)
  * sl_printf
  *
  * fprintf function for libservicelog to maintain word wrapping for all
- * output at sl_print_width (68) characters.
+ * output at sl_print_width (80) characters.
  */
 int
 sl_printf(FILE *stream, char *fmt, ...)
@@ -280,11 +280,10 @@ sl_printf(FILE *stream, char *fmt, ...)
 			if (newline != NULL) {
 				prnt_len = newline - &tmpbuf[offset] + 1;
 				size -= buf_offset;
-				snprintf(buf + buf_offset, size,
+				snprintf(buf + buf_offset, prnt_len,
 					 "%s", &tmpbuf[offset]);
 				buf_offset = strlen(buf);
-				buf[*buf + buf_offset] = '\n';
-				buf_offset += 1;
+				buf[buf_offset++] = '\n';
 				offset += prnt_len;
 				line_offset = 0;
 				break;
@@ -301,11 +300,16 @@ sl_printf(FILE *stream, char *fmt, ...)
 
 			/* print up to the last brkpt */
 			size -= buf_offset;
-			snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
+			snprintf(buf + buf_offset, prnt_len, "%s", &tmpbuf[offset]);
 			buf_offset = strlen(buf);
-			buf[*buf + buf_offset] = '\n';
-			buf_offset += 1;
+			buf[buf_offset++] = '\n';
 			offset += prnt_len;
+			/*
+			 * Exclude the newline added. If whitespace was there it was
+			 * overwritten by the new line, no need to reconsider that
+			*/
+			if (brkpt == NULL)
+                                offset--;
 			line_offset = 0;
 		}
 	}
