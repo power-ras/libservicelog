@@ -1,0 +1,8 @@
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND    noninteractive
+RUN apt-get update -qq
+RUN apt-get update -qq && apt-get install -y libsqlite3-dev servicelog libservicelog-1.1-1
+RUN apt-get update -qq && apt-get install -y automake libtool git make gcc bison flex valgrind
+RUN apt-get update -qq && apt-get install -y librtas-dev librtasevent-dev
+COPY . /build/
+WORKDIR /build
