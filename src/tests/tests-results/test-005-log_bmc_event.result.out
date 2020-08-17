@@ -24,5 +24,6 @@ Event Type:         000000e0
 Direction:          Deassert
 
 Description:
-Some Error Return
+This is just the sample error message for testing, Refer to the system service
+documentation for actual error
 

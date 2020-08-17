@@ -36,6 +36,9 @@
 #define SERVICELOG_EVENT_DUMP		6
 #define SERVICELOG_EVENT_TRUNCATE	7
 
+/* Adding variable length description field */
+char description_one[] = "Some Error Return";
+char description_two[] = "This is just the sample error message for testing, Refer to the system service documentation for actual error";
 
 /* Truncate all events */
 static int truncate_all_events(void)
@@ -98,11 +101,10 @@ static int truncate_all_events(void)
 /* Common event logging code */
 static int svc_event_log(struct sl_event *event, int event_type,
 			 int serviceable_flag, int predictive_flag,
-			 int callhome_flag, int status)
+			 int callhome_flag, int status, char *description)
 {
         unsigned char raw_data[] = "event_log_field";
         char refcode[] = "Bug Repro";
-        char description[] = "Some Error Return";
         uint32_t rc;
         uint64_t log_id = 0;
 	servicelog *slog;
@@ -160,7 +162,7 @@ static int log_basic_event(void)
 
 	memset(&event, 0, sizeof(struct sl_event));
 
-	return svc_event_log(&event, SL_TYPE_BASIC, 0, 0, 0, 0);
+	return svc_event_log(&event, SL_TYPE_BASIC, 0, 0, 0, 0, description_one);
 }
 
 /* Log RTAS event */
@@ -190,7 +192,7 @@ static int log_rtas_event(void)
 
 	event.addl_data = &rtas_data;
 
-	return svc_event_log(&event, SL_TYPE_RTAS, 1, 1, 1, 1);
+	return svc_event_log(&event, SL_TYPE_RTAS, 1, 1, 1, 1, description_two);
 }
 
 /* Log OS event */
@@ -208,7 +210,7 @@ static int log_os_event(void)
 
 	event.addl_data = &os_data;
 
-	return svc_event_log(&event, SL_TYPE_OS, 0, 0, 0, 0);
+	return svc_event_log(&event, SL_TYPE_OS, 0, 0, 0, 0, description_one);
 }
 
 /* Log enclosure event */
@@ -226,7 +228,7 @@ static int log_enclosure_event(void)
 
 	event.addl_data = &enclosure_data;
 
-	return svc_event_log(&event, SL_TYPE_ENCLOSURE, 0, 0, 0, 0);
+	return svc_event_log(&event, SL_TYPE_ENCLOSURE, 0, 0, 0, 0, description_one);
 }
 
 /* Log BMC event */
@@ -249,7 +251,7 @@ static int log_bmc_event(void)
 
 	event.addl_data = &bmc_data;
 
-	return svc_event_log(&event, SL_TYPE_BMC, 0, 0, 0, 0);
+	return svc_event_log(&event, SL_TYPE_BMC, 0, 0, 0, 0, description_two);
 }
 
 /* Retrieve logged event */
