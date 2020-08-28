@@ -30,3 +30,13 @@ Description:
 This is just the sample error message for testing, Refer to the system service
 documentation for actual error
 
+
+<< Callout 1 >>
+Priority            L
+Type                16
+Procedure Id:       FSPSP07
+Location:           U787E.001.0458891-P1
+FRU:                MA_BRDG
+Serial:             YL30F4148001
+CCIN:               261C
+

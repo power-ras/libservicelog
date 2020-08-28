@@ -132,7 +132,6 @@ static int svc_event_log(struct sl_event *event, int event_type,
         event->raw_data_len = 41;
         event->raw_data = raw_data;
 
-        event->callouts = NULL;
         event->next = NULL;
 
         rc = servicelog_event_log(slog, event, &log_id);
@@ -155,6 +154,20 @@ static int svc_event_log(struct sl_event *event, int event_type,
         return 0;
 }
 
+static void svc_create_callouts(struct sl_callout *callout)
+{
+	memset(callout, 0, sizeof(struct sl_callout));
+
+	callout->priority = 'L';
+	callout->type = 16;
+	callout->procedure = (char *)"FSPSP07";
+	callout->location = (char *)"U787E.001.0458891-P1";
+	callout->fru = (char *)"MA_BRDG";
+	callout->serial = "YL30F4148001";
+	callout->ccin = "261C";
+	callout->next = NULL;
+}
+
 /* Log basic event */
 static int log_basic_event(void)
 {
@@ -170,6 +183,7 @@ static int log_rtas_event(void)
 {
 	struct sl_event event;
 	struct sl_data_rtas rtas_data;
+	struct sl_callout callout;
 
 	memset(&event, 0, sizeof(struct sl_event));
 
@@ -191,6 +205,9 @@ static int log_rtas_event(void)
 	rtas_data.addl_words[7] = 0;
 
 	event.addl_data = &rtas_data;
+
+	svc_create_callouts(&callout);
+	event.callouts = &callout;
 
 	return svc_event_log(&event, SL_TYPE_RTAS, 1, 1, 1, 1, description_two);
 }
@@ -218,6 +235,7 @@ static int log_enclosure_event(void)
 {
 	struct sl_event event;
 	struct sl_data_enclosure enclosure_data;
+	struct sl_callout callout;
 
 	memset(&event, 0, sizeof(struct sl_event));
 
@@ -227,6 +245,9 @@ static int log_enclosure_event(void)
 				(char *) "testx-enclosure-serial-check-1.0";
 
 	event.addl_data = &enclosure_data;
+
+	svc_create_callouts(&callout);
+	event.callouts = &callout;
 
 	return svc_event_log(&event, SL_TYPE_ENCLOSURE, 0, 0, 0, 0, description_one);
 }
