@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-m4_define([ppu_version], 1.1.18)
+m4_define([ppu_version], 1.1.19)
 
 AC_PREREQ(2.69)
 AC_INIT([libservicelog], ppu_version, [hegdevasant@in.ibm.com])
@@ -16,7 +16,7 @@ GENERIC_LIBRARY_NAME=libservicelog
 GENERIC_PACKAGE_NAME=servicelog
 GENERIC_MAJOR_VERSION=1
 GENERIC_MINOR_VERSION=1
-GENERIC_MICRO_VERSION=18
+GENERIC_MICRO_VERSION=19
 GENERIC_API_VERSION=$GENERIC_MAJOR_VERSION
 AC_SUBST(GENERIC_API_VERSION)
 

@@ -73,6 +73,11 @@ getent group service >/dev/null || /usr/sbin/groupadd -r service
 %{_libdir}/pkgconfig/servicelog-1.pc
 
 %changelog
+* Wed May 26 2021 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> - 1.1.19
+- Add Travis configuration
+- Fix output alignment issue
+- Fix segfault on servicelog_open() failure
+
 * Tue Aug 22 2017 Ankit Kumar <ankit@linux.vnet.ibm.com> 1.1.18
 - Sqlite bind call validation
 - Added libservicelog test cases
