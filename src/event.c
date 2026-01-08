@@ -620,17 +620,17 @@ servicelog_event_query(servicelog *slog, char *query,
 			else if (!strcmp(name, "time_logged")) {
 				strptime((char*)sqlite3_column_text(stmt, i),
 					 "%Y-%m-%d %T", &t);
-				e->time_logged = mktime(&t);
+				e->time_logged = timegm(&t);
 			}
 			else if (!strcmp(name, "time_event")) {
 				strptime((char*)sqlite3_column_text(stmt, i),
 					 "%Y-%m-%d %T", &t);
-				e->time_event = mktime(&t);
+				e->time_event = timegm(&t);
 			}
 			else if (!strcmp(name, "time_last_update")) {
 				strptime((char*)sqlite3_column_text(stmt, i),
 					 "%Y-%m-%d %T", &t);
-				e->time_last_update = mktime(&t);
+				e->time_last_update = timegm(&t);
 			}
 			else if (!strcmp(name, "type"))
 				e->type = sqlite3_column_int(stmt, i);
