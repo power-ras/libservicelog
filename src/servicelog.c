@@ -279,7 +279,6 @@ sl_printf(FILE *stream, char *fmt, ...)
 
 			if (newline != NULL) {
 				prnt_len = newline - &tmpbuf[offset] + 1;
-				size -= buf_offset;
 				snprintf(buf + buf_offset, prnt_len,
 					 "%s", &tmpbuf[offset]);
 				buf_offset = strlen(buf);
@@ -299,7 +298,6 @@ sl_printf(FILE *stream, char *fmt, ...)
 			}
 
 			/* print up to the last brkpt */
-			size -= buf_offset;
 			snprintf(buf + buf_offset, prnt_len, "%s", &tmpbuf[offset]);
 			buf_offset = strlen(buf);
 			buf[buf_offset++] = '\n';
@@ -314,7 +312,7 @@ sl_printf(FILE *stream, char *fmt, ...)
 		}
 	}
 
-	size -= buf_offset;
+	size = sizeof(buf) - buf_offset;
 	prnt_len = snprintf(buf + buf_offset, size, "%s", &tmpbuf[offset]);
 	line_offset += prnt_len;
 
