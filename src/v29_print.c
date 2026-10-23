@@ -78,7 +78,7 @@ int
 v29_servicelog_print_header(FILE *str, struct sl_header *hdr, int verbosity)
 {
 	int count = 0;
-	char *title;
+	char *title, *severity;
 
 	if (verbosity < 0) {
 		struct tm time;
@@ -130,8 +130,15 @@ v29_servicelog_print_header(FILE *str, struct sl_header *hdr, int verbosity)
 			   ctime(&(hdr->time_event)));
 	count += sl_printf(str, PRNT_FMT_STR_NR, "Log Timestamp:",
 			   ctime(&(hdr->time_log)));
+
+	if (hdr->severity >= (sizeof(severity_text) / sizeof(severity_text[0]))) {
+			severity = "UNKNOWN";
+	} else {
+			severity = severity_text[hdr->severity];
+	}
+
 	count += sl_printf(str, "%-20s%d (%s)\n", "Severity:",
-			   hdr->severity, severity_text[hdr->severity]);
+			   hdr->severity, severity);
 	count += sl_printf(str, PRNT_FMT_NUM, "Version:", hdr->version);
 
 	count += sl_printf(str, PRNT_FMT_STR, "Serviceable Event:",
