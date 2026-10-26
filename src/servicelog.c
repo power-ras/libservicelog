@@ -289,7 +289,7 @@ sl_printf(FILE *stream, char *fmt, ...)
 			}
 		}
 
-		if (width >= sl_print_width) {
+		if (newline == NULL && width >= sl_print_width) {
 			if (brkpt == NULL) {
 				/* won't fit on one line, break across lines */
 				prnt_len = width - line_offset + 1;
