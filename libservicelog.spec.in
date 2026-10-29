@@ -72,6 +72,14 @@ getent group service >/dev/null || /usr/sbin/groupadd -r service
 %{_libdir}/pkgconfig/servicelog-1.pc
 
 %changelog
+* Thu Oct 29 2026 Sourabh Jain <sourabhjain@linux.ibm.com> - 1.1.20
+- v29_compat: handle zero-sized buffers in strNcpy
+- libservicelog: provide group(service) capability
+- spec: stop packaging .la files
+- sl_printf: don't wrap a line already terminated by newline
+- sl_printf: fix buffer size underflow leading to stack overflow
+- libservicelog: fix timezone handling in servicelog event parsing
+
 * Wed May 26 2021 Vasant Hegde <hegdevasant at linux.vnet.ibm.com> - 1.1.19
 - Add Travis configuration
 - Fix output alignment issue
