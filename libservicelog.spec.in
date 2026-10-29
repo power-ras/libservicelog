@@ -45,6 +45,7 @@ install -D --mode=754 servicelog.db \
 %install
 %{__rm} -rf $RPM_BUILD_ROOT
 %{__make} install DESTDIR=$RPM_BUILD_ROOT
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/*.la
 
 %clean
 %{__rm} -rf $RPM_BUILD_ROOT
@@ -59,8 +60,6 @@ getent group service >/dev/null || /usr/sbin/groupadd -r service
 %files
 %defattr(-,root,root,-)
 %doc COPYING AUTHORS README
-%exclude %{_libdir}/*.la
-%{_libdir}/libservicelog-@GENERIC_RELEASE@.so.*
 %{_libdir}/libservicelog-*.so.*
 %attr( 754, root, service ) %dir /var/lib/servicelog
 %config(noreplace) %verify(not md5 size mtime) %attr(644,root,service) /var/lib/servicelog/servicelog.db
@@ -69,7 +68,6 @@ getent group service >/dev/null || /usr/sbin/groupadd -r service
 %defattr(-,root,root,-)
 %{_libdir}/*.so
 %{_includedir}/servicelog-1
-%{_libdir}/*.la
 %{_libdir}/pkgconfig/servicelog-1.pc
 
 %changelog
