@@ -366,8 +366,10 @@ free_mem:
 	if (os->device)
 		free(os->device);
 
-	if (event->addl_data)
+	if (event->addl_data) {
 		free(event->addl_data);
+		event->addl_data = NULL;
+	}
 
 	return 1;
 }
@@ -395,6 +397,10 @@ retrieve_addl_data_rtas(void *e, int argc, char **argv, char **column)
 	rtas = (struct sl_data_rtas *)event->addl_data;
 
 	for (i=0; i<argc; i++) {
+
+		if ((!argv[i]) || (!column[i]))
+			goto free_mem;
+
 		if (!strcmp(column[i], "action_flags")) {
 			rtas->action_flags = atoi(argv[i]);
 		}
@@ -446,6 +452,14 @@ retrieve_addl_data_rtas(void *e, int argc, char **argv, char **column)
 	}
 
 	return 0;
+
+free_mem:
+	if (event->addl_data) {
+		free(event->addl_data);
+		event->addl_data = NULL;
+	}
+
+	return 1;
 }
 
 /**
@@ -496,8 +510,10 @@ free_mem:
 	if (encl->enclosure_model)
 		free(encl->enclosure_model);
 
-	if (event->addl_data)
+	if (event->addl_data) {
 		free(event->addl_data);
+		event->addl_data = NULL;
+	}
 
 	return 1;
 }
@@ -525,6 +541,10 @@ retrieve_addl_data_bmc(void *e, int argc, char **argv, char **column)
 	bmc = (struct sl_data_bmc *)event->addl_data;
 
 	for (i=0; i<argc; i++) {
+
+		if ((!argv[i]) || (!column[i]))
+			goto free_mem;
+
 		if (!strcmp(column[i], "sel_id")) {
 			bmc->sel_id = atoi(argv[i]);
 		}
@@ -555,6 +575,14 @@ retrieve_addl_data_bmc(void *e, int argc, char **argv, char **column)
 	}
 
 	return 0;
+
+free_mem:
+	if (event->addl_data) {
+		free(event->addl_data);
+		event->addl_data = NULL;
+	}
+
+	return 1;
 }
 
 /**
